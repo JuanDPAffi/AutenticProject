@@ -13,7 +13,12 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(express.json());
 
-// Rutas
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Ruta funcionando" });
+});
+
+// Cargar rutas de firma
+console.log("📦 Cargando rutas..."); // <-- esto debería aparecer en docker logs
 app.use("/api", firmaRoutes);
 
 // Conexión a MongoDB

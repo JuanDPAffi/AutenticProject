@@ -18,18 +18,27 @@ export async function ejecutarProcesoFirma(req, res) {
 
     console.log("📬 Datos obtenidos:", datos);
 
-    // 🐞 Modo debug directo desde el payload (útil para pruebas manuales)
+    // 🐞 Modo debug desde el payload (manual)
     if (datos.debug === true || datos.debug === "true") {
       console.log("🐞 Modo DEBUG activado desde el payload, no se genera contrato ni se envía a Autentic");
       return res.status(200).json({ message: "DEBUG activado", datosRecibidos: datos });
     }
 
-    // 🧪 MODO_PRUEBA desde variables de entorno (control global desde Azure)
+    // ✅ Validar campos obligatorios antes de continuar
+    if (!datos.tipo_persona || !datos.ciudad) {
+      console.warn("⚠️ Faltan campos obligatorios: tipo_persona y/o ciudad");
+      return res.status(400).json({
+        error: "Faltan datos obligatorios: tipo_persona y/o ciudad",
+        datosRecibidos: datos,
+      });
+    }
+
+    // 🧪 MODO_PRUEBA desde variable de entorno (Azure)
     if (process.env.MODO_PRUEBA === "true") {
       const firmantes = await obtenerFirmantes(datos);
       const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
 
-      console.log("🧪 MODO PRUEBA ACTIVADO (env): Solo generamos contratos, no se envía a Autentic");
+      console.log("🧪 MODO PRUEBA ACTIVADO - Solo generamos contratos, no se envía a Autentic");
       return res.status(200).json({
         message: "Modo prueba activado - contratos generados pero NO enviados a firma",
         firmantes,
@@ -37,12 +46,13 @@ export async function ejecutarProcesoFirma(req, res) {
       });
     }
 
-    // 🔐 Ejecución normal (modo producción real)
+    // 🔐 Producción real: firmar con Autentic
     const firmantes = await obtenerFirmantes(datos);
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
-
     const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
+
     res.status(200).json({ message: "Proceso de firma iniciado", resultado });
+
   } catch (error) {
     console.error("❌ Error en ejecutarProcesoFirma:", error);
     res.status(500).json({ error: "Error al iniciar el proceso de firma" });

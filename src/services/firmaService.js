@@ -3,7 +3,12 @@ import { Gerente } from "../models/gerente.js";
 
 export async function obtenerFirmantes({ ciudad, tipo_persona }) {
   try {
-    const gerente = await Gerente.findOne({ cc: 1 });
+    const tipoGerente = tipo_persona === "juridica" ? "General" : "Comercial";
+    const gerente = await Gerente.findOne({ type: tipoGerente });
+
+    if (!gerente) {
+      throw new Error(`No se encontró un gerente para tipo: ${tipoGerente}`);
+    }
 
     const firmanteCliente = {
       name: "Juan Diego",
