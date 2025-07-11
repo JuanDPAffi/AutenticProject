@@ -15,22 +15,26 @@ export async function ejecutarProcesoFirma(req, res) {
       return res.status(400).json({ error: "Faltan datos obligatorios", datos });
     }
 
-    // Generar contrato PDF (usa internamente DOCX → PDF → Base64)
+    // 1. Generar contrato DOCX, convertir a PDF y base64
     const base64Contrato = await generarContratoPDF(datos);
 
-    // Leer reglamento y convertir a base64
-    const reglamentoPath = path.resolve("REGLAMENTO_DE_FIANZA_AFFI.pdf");
+    // 2. Leer reglamento desde /src/contratos/ y convertir a base64
+    const reglamentoPath = path.resolve("src/contratos/REGLAMENTO_DE_FIANZA_AFFI.pdf");
+    if (!fs.existsSync(reglamentoPath)) {
+      throw new Error(`No se encontró el archivo del reglamento en: ${reglamentoPath}`);
+    }
+
     const reglamentoBuffer = fs.readFileSync(reglamentoPath);
     const base64Reglamento = reglamentoBuffer.toString("base64");
 
-    // Obtener firmantes (cliente + internos desde Mongo)
+    // 3. Obtener firmantes dinámicamente
     const firmantes = await obtenerFirmantes(datos);
 
-    // Enviar a Autentic
+    // 4. Enviar a Autentic
     const resultado = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
 
     return res.status(200).json({
-      message: "Proceso de firma iniciado correctamente",
+      message: "✅ Proceso de firma iniciado correctamente",
       resultado
     });
 

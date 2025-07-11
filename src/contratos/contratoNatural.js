@@ -12,9 +12,13 @@ import {
   PageNumber
 } from "docx";
 import { writeFileSync, readFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// 📦 Leer datos desde archivo temporal
-const raw = readFileSync("contratos/datosTemp.json", "utf-8");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rutaJSON = path.resolve(__dirname, "datosTemp.json");
+
+const raw = readFileSync(rutaJSON, "utf-8");
 const input = JSON.parse(raw);
 
 // 📌 Función para convertir día a letras
