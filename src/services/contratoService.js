@@ -28,12 +28,12 @@ export async function generarContratoPDF(datos) {
   }
 
   // Leer DOCX generado
-  const docxPath = path.resolve("Contrato_Fianza.docx");
+  const docxPath = path.resolve("src/contratos/Contrato_Fianza.docx");
   const docxBuffer = fs.readFileSync(docxPath);
 
   // Convertir a PDF
   const pdfBuffer = await convertAsync(docxBuffer, ".pdf", undefined);
-  const pdfPath = path.resolve("Contrato_Fianza.pdf");
+  const pdfPath = path.resolve("src/contratos/Contrato_Fianza.pdf");
   fs.writeFileSync(pdfPath, pdfBuffer);
   console.log("📄 Contrato convertido a PDF");
 

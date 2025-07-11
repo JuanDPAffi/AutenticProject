@@ -1441,6 +1441,6 @@ const doc = new Document({
 
 // 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
-  writeFileSync("Contrato_Fianza.docx", buffer);
+  writeFileSync("src/contratos/Contrato_Fianza.docx", buffer);
   console.log("✅ Contrato natural generado con éxito");
 });

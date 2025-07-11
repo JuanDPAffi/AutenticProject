@@ -1,0 +1,14 @@
+{
+  "cedula": 1234567890,
+  "correo": "pinillamontoyajuandiego@gmail.com",
+  "tipo_persona": "Natural",
+  "numero_celular": "3146196336",
+  "numero_de_contrato": "CON6719273981243",
+  "nit_inmobiliaria": "719822090",
+  "ciudad_inmobiliaria": "Medellín",
+  "nombre_inmobiliaria": "PRUEBA12345",
+  "nombre_persona_natural": "JUAN DIEGO P",
+  "cedula_representante_legal": 1334567890,
+  "nombre_representante_legal": "JUAN DIEGO PINILLA MONTOYA",
+  "nombre_establecimiento_comercio": "IMB JUANCHO"
+}

@@ -21,6 +21,14 @@ const rutaJSON = path.resolve(__dirname, "datosTemp.json");
 const raw = readFileSync(rutaJSON, "utf-8");
 const input = JSON.parse(raw);
 
+// 📌 Configuración de tarifas
+const tarifaZonaCentro = 2.16;
+const tarifaZonaRegular = 1.72;
+
+function calcularTarifa(ciudad) {
+  return ciudad === "Bogotá D.C." ? tarifaZonaCentro : tarifaZonaRegular;
+}
+
 // 📌 Función para convertir día a letras
 function numeroALetrasDia(n) {
   const dias = [
@@ -42,18 +50,18 @@ const meses = [
 // 🧾 Datos del contrato para persona natural
 const data = {
   NUMERO_CONTRATO: input.numero_de_contrato,
-  NOMBRE_CLIENTE_NATURAL: input.nombre_cliente_natural,
-  CEDULA_CLIENTE_NATURAL: input.cedula_cliente_natural,
-  CIUDAD_EXPEDICION_CLIENTE: input.ciudad_expedicion_cliente,
-  CIUDAD_RESIDENCIA_CLIENTE: input.ciudad_residencia_cliente,
-  DIRECCION_CLIENTE: input.direccion_cliente,
-  TELEFONO_CLIENTE: input.telefono_cliente,
-  CORREO_CLIENTE: input.correo_cliente,
+  CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
+  NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
+  CEDULA_REPRESENTANTE_LEGAL: input.cedula_representante_legal,
+  NOMBRE_ESTABLECIMIENTO_COMERCIO: input.nombre_establecimiento_comercio,
   DIA_NUMEROS: hoy.getDate().toString(),
   DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
   MES: meses[hoy.getMonth()],
-  ANO: hoy.getFullYear().toString()
+  ANO: hoy.getFullYear().toString(),
+  TARIFA_SEGUN_ZONA: `${calcularTarifa(input.ciudad_inmobiliaria)}%`
 };
+
+console.log("✅ Datos para el contrato:", data);
 
 // 🔠 Convertir todo a mayúsculas
 Object.keys(data).forEach(key => {
@@ -176,13 +184,13 @@ const doc = new Document({
         spacing: { before: 0, after: 0, line: 240 },
         children: [
           new TextRun({ break: 1 }),
-          new TextRun({ text: data.NOMBRE_INMOBILIARIA, bold: true, font: 'Arial MT', size: 22 }),
+          new TextRun({ text: data.NOMBRE_REPRESENTANTE_LEGAL, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` sociedad legalmente constituida con domicilio en la ciudad de ${data.CIUDAD_INMOBILIARIA} bajo el NIT No ${data.NIT_INMOBILIARIA} representada en este acto por ${data.NOMBRE_REPRESENTANTE_LEGAL} identificado con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL} de ${data.CIUDAD_EXPEDICION} en su calidad de Representante Legal existencia y representación que se acredita con certificación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
+            text: ` persona natural con establecimiento de comercio legalmente constituida con domicilio en la ciudad de ${data.CIUDAD_INMOBILIARIA} con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL}, en su calidad de propietaria de establecimiento de comercio que se acredita con certiﬁcación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
             font: 'Arial MT',
             size: 22
           }),
-          new TextRun({ text: 'LA SOCIEDAD INMOBILIARIA', bold: true, font: 'Arial MT', size: 22 }),
+          new TextRun({ text: 'LA INMOBILIARIA', bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({ text: '.', font: 'Arial MT', size: 22 }),
         ]
       }),
@@ -1409,9 +1417,7 @@ const doc = new Document({
                   new Paragraph({ text: data.NOMBRE_REPRESENTANTE_LEGAL, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: `C.C. No ${data.CEDULA_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: "Representante legal", font: 'Arial MT', size: 22 }),
-                  new Paragraph({ text: data.NOMBRE_INMOBILIARIA, font: 'Arial MT', size: 22 }),
-                  new Paragraph({ text: data.NIT_INMOBILIARIA, font: 'Arial MT', size: 22 })
-                ]
+                  new Paragraph({ text: data.NOMBRE_ESTABLECIMIENTO_COMERCIO, font: 'Arial MT', size: 22 })                ]
               })
             ]
           })
@@ -1434,6 +1440,6 @@ const doc = new Document({
 
 // 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
-  writeFileSync("Contrato_Fianza.docx", buffer);
+  writeFileSync("src/contratos/Contrato_Fianza.docx", buffer);
   console.log("✅ Contrato natural generado con éxito");
 });

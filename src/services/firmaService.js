@@ -1,5 +1,7 @@
 // services/firmaService.js
 import { Gerente } from "../models/gerente.js";
+import dotenv from "dotenv";
+dotenv.config(); // ✅ Esto carga las variables del archivo .env
 
 function construirFirmante({ name, lastName = "", cc, email, phone = "" }) {
   return {

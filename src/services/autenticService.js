@@ -1,4 +1,6 @@
 import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config(); // ✅ Esto carga las variables del archivo .env
 
 // 🔐 Configuración desde variables de entorno
 const authUrl = process.env.AUTH_URL;
