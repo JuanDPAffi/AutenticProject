@@ -12,8 +12,7 @@ export async function obtenerFirmantes({ ciudad, tipo_persona }) {
       email: "juandiegopm@yopmail.com",
       phone: "3146196336",
       role: "SIGNER",
-      authenticationType: "EMAIL",
-      signatureType: "GRAPHIC"
+      authMethods: ["OTP"]
     };
 
     const firmanteGerente = {
@@ -21,10 +20,9 @@ export async function obtenerFirmantes({ ciudad, tipo_persona }) {
       lastName: gerente.last_name,
       identification: gerente.cc.toString(),
       email: gerente.email,
-      phone: "3000000000",
+      phone: "",
       role: "SIGNER",
-      authenticationType: "EMAIL",
-      signatureType: "GRAPHIC"
+      authMethods: ["OTP"]
     };
 
     return [firmanteCliente, firmanteGerente];
