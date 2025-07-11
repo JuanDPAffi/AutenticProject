@@ -7,12 +7,15 @@ export async function ejecutarProcesoFirma(req, res) {
     const datos = req.body;
     console.log("📥 Datos recibidos del webhook:", datos);
 
-    // Validar campos obligatorios
+    // Validar campos obligatorios mínimos
     if (!datos.tipo_persona || !datos.ciudad_inmobiliaria || !datos.numero_de_contrato) {
-      return res.status(400).json({ error: "Faltan campos obligatorios", datosRecibidos: datos });
+      return res.status(400).json({
+        error: "Faltan campos obligatorios",
+        datosRecibidos: datos
+      });
     }
 
-    // Normalizar tipo_persona
+    // Normalizar tipo_persona para evitar errores por tildes o mayúsculas
     const tipoPersona = (datos.tipo_persona || "")
       .toLowerCase()
       .normalize("NFD")
@@ -23,22 +26,35 @@ export async function ejecutarProcesoFirma(req, res) {
     } else if (tipoPersona === "juridica") {
       datos.tipoContrato = "juridico";
     } else {
-      return res.status(400).json({ error: "Tipo de persona no válido", tipo_persona: datos.tipo_persona });
+      return res.status(400).json({
+        error: "Tipo de persona no válido",
+        tipo_persona: datos.tipo_persona
+      });
     }
 
-    // Generar y convertir contrato a PDF
+    // ✅ Generar contrato y reglamento en base64 PDF
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
 
-    // Obtener firmantes desde Mongo o datos locales
-    const firmantes = await obtenerFirmantes({ ...datos, tipo_persona: tipoPersona }); // Enviar tipo_persona normalizado
+    // ✅ Obtener firmantes (cliente + comercial [+ gerencia])
+    const firmantes = await obtenerFirmantes({ ...datos, tipo_persona: tipoPersona });
 
-    // Enviar contrato a Autentic
+    if (!firmantes || !Array.isArray(firmantes) || firmantes.length < 2) {
+      return res.status(500).json({ error: "No se pudieron obtener los firmantes correctamente." });
+    }
+
+    // ✅ Enviar para firma a Autentic
     const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
 
-    res.status(200).json({ message: "Proceso de firma iniciado", resultado });
+    return res.status(200).json({
+      message: "Proceso de firma iniciado correctamente",
+      resultado
+    });
 
   } catch (error) {
-    console.error("❌ Error en ejecutarProcesoFirma:", error);
-    res.status(500).json({ error: "Error al iniciar el proceso de firma" });
+    console.error("❌ Error en ejecutarProcesoFirma:", error.message || error);
+    return res.status(500).json({
+      error: "Error interno al iniciar el proceso de firma",
+      detalle: error.message || error
+    });
   }
 }

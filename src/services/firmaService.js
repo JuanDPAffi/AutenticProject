@@ -3,51 +3,83 @@ import { Gerente } from "../models/gerente.js";
 
 export async function obtenerFirmantes(datos) {
   try {
-    const tipoGerente = datos.tipo_persona === "juridica" ? "General" : "Comercial";
-    const gerente = await Gerente.findOne({ type: tipoGerente });
+    // Buscar gerentes necesarios
+    const gerentes = await Gerente.find({ type: { $in: ["Comercial", "General"] } });
 
-    if (!gerente) {
-      throw new Error(`No se encontró un gerente para tipo: ${tipoGerente}`);
-    }
+    const comercial = gerentes.find(g => g.type === "Comercial");
+    const general = gerentes.find(g => g.type === "General");
 
-    // Asignar firmante cliente según tipo de persona
+    // Validar cliente
     let firmanteCliente;
-
-    if (datos.tipo_persona === "juridica") {
+    if (datos.tipo_persona.toLowerCase() === "juridica" || datos.tipo_persona.toLowerCase() === "jurídica") {
       firmanteCliente = {
         name: datos.nombre_representante_legal,
-        lastName: "", // Puedes separar nombres si es necesario
+        lastName: "", // Puedes dividir si deseas
         identification: datos.cedula_representante_legal,
-        email: datos.correo_representante_legal,
-        phone: datos.telefono_representante_legal || "",
+        email: datos.correo || datos.correo_representante_legal, // fallback
+        phone: datos.numero_celular || datos.telefono_representante_legal || "",
         role: "SIGNER",
         authMethods: ["OTP"]
       };
-    } else {
+
+      if (!comercial || !general) {
+        throw new Error("Faltan firmantes internos: comercial o gerencia.");
+      }
+
+      const firmanteComercial = {
+        name: comercial.name,
+        lastName: comercial.last_name,
+        identification: comercial.cc.toString(),
+        email: comercial.email,
+        phone: "",
+        role: "SIGNER",
+        authMethods: ["OTP"]
+      };
+
+      const firmanteGerente = {
+        name: general.name,
+        lastName: general.last_name,
+        identification: general.cc.toString(),
+        email: general.email,
+        phone: "",
+        role: "SIGNER",
+        authMethods: ["OTP"]
+      };
+
+      return [firmanteCliente, firmanteComercial, firmanteGerente];
+
+    } else if (datos.tipo_persona.toLowerCase() === "natural") {
       firmanteCliente = {
-        name: datos.nombre_natural,
+        name: datos.nombre_persona_natural || datos.nombre_natural,
         lastName: "",
-        identification: datos.cedula_natural,
-        email: datos.correo_natural,
-        phone: datos.telefono_natural || "",
+        identification: datos.cedula || datos.cedula_natural,
+        email: datos.correo || datos.correo_natural,
+        phone: datos.numero_celular || datos.telefono_natural || "",
         role: "SIGNER",
         authMethods: ["OTP"]
       };
+
+      if (!comercial) {
+        throw new Error("Faltante firmante interno: comercial.");
+      }
+
+      const firmanteComercial = {
+        name: comercial.name,
+        lastName: comercial.last_name,
+        identification: comercial.cc.toString(),
+        email: comercial.email,
+        phone: "",
+        role: "SIGNER",
+        authMethods: ["OTP"]
+      };
+
+      return [firmanteCliente, firmanteComercial];
+    } else {
+      throw new Error(`Tipo de persona inválido: ${datos.tipo_persona}`);
     }
 
-    const firmanteGerente = {
-      name: gerente.name,
-      lastName: gerente.last_name,
-      identification: gerente.cc.toString(),
-      email: gerente.email,
-      phone: "",
-      role: "SIGNER",
-      authMethods: ["OTP"]
-    };
-
-    return [firmanteCliente, firmanteGerente];
   } catch (error) {
-    console.error("❌ Error al obtener firmantes:", error);
+    console.error("❌ Error al obtener firmantes:", error.message);
     throw error;
   }
 }
