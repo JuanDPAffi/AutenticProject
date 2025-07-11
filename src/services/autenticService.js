@@ -44,13 +44,11 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
           documents: [
             {
               content: base64Reglamento,
-              fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf",
-              requireSignature: false
+              fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf"
             },
             {
               content: base64Contrato,
-              fileName: "Contrato_Fianza.pdf",
-              requireSignature: true
+              fileName: "Contrato_Fianza.pdf"
             }
           ],
           subject: "Firma del Contrato de Fianza",
