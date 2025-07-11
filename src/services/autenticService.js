@@ -62,7 +62,7 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
       ]
     };
 
-    const { data } = await axios.post(`${signingUrl}create`, payload, {
+    const { data } = await axios.post(signingUrl, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
