@@ -77,14 +77,14 @@ async function obtenerFirmantesDesdeMongo() {
     lastName: g.last_name,
     identification: g.cc.toString(),
     email: g.email,
-    phone: "304343343443",
+    phone: "",
     role: "SIGNER",
     authMethods: ["OTP"]
   }));
 }
 
 // ✅ Enviar documentos a Autentic
-async function enviarParaFirma(base64PDF, base64Reglamento, token, firmantes) {
+async function enviarParaFirma(base64Reglamento, base64PDF, token, firmantes) {
   const payload = {
     sendCompletionNotification: true,
     emailForNotification: senderEmail,
@@ -95,8 +95,8 @@ async function enviarParaFirma(base64PDF, base64Reglamento, token, firmantes) {
         senderIdentification,
         signers: firmantes,
         documents: [
-          { content: base64PDF, fileName: "src/contratos/Contrato_Fianza.pdf" },
-          { content: base64Reglamento, fileName: "src/contratos/Reglamento_Fianza_AFFI.pdf" }
+          { content: base64Reglamento, fileName: "REGLAMENTO DE FIANZA AFFI.pdf", type: "ATTACHMENT" },
+          { content: base64PDF, fileName: "Contrato_Fianza.pdf" }
         ],
         subject: "Firma del Contrato de Fianza",
         message: "Por favor firme el contrato digitalmente.",
@@ -132,7 +132,7 @@ async function enviarParaFirma(base64PDF, base64Reglamento, token, firmantes) {
     console.log("📄 Convirtiendo DOCX a PDF...");
     const pdfBuffer = await convertirDocxAPdf("src/contratos/Contrato_Fianza.docx", "src/contratos/Contrato_Fianza.pdf");
 
-    const reglamentoBuffer = fs.readFileSync("src/contratos/REGLAMENTO DE FIANZA AFFI 8.pdf");
+    const reglamentoBuffer = fs.readFileSync("src/contratos/REGLAMENTO DE FIANZA AFFI.pdf");
     const base64Reglamento = reglamentoBuffer.toString("base64");
     const base64PDF = pdfBuffer.toString("base64");
 
@@ -153,7 +153,7 @@ async function enviarParaFirma(base64PDF, base64Reglamento, token, firmantes) {
     const token = await obtenerToken();
 
     console.log("📤 Enviando contrato a Autentic...");
-    await enviarParaFirma(base64PDF, base64Reglamento, token, todosFirmantes);
+    await enviarParaFirma(base64Reglamento, base64PDF, token, todosFirmantes);
 
     await mongoose.disconnect();
   } catch (err) {
