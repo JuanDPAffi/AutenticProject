@@ -12,12 +12,15 @@ export async function ejecutarProcesoFirma(req, res) {
       return res.status(400).json({ error: "Faltan campos obligatorios", datosRecibidos: datos });
     }
 
-    // Identificar si es persona natural o jurídica
-    const tipoPersona = datos.tipo_persona.toLowerCase();
+    // Normalizar tipo_persona
+    const tipoPersona = (datos.tipo_persona || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // elimina tildes
 
     if (tipoPersona === "natural") {
       datos.tipoContrato = "natural";
-    } else if (tipoPersona === "juridica" || tipoPersona === "jurídica") {
+    } else if (tipoPersona === "juridica") {
       datos.tipoContrato = "juridico";
     } else {
       return res.status(400).json({ error: "Tipo de persona no válido", tipo_persona: datos.tipo_persona });
@@ -27,7 +30,7 @@ export async function ejecutarProcesoFirma(req, res) {
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
 
     // Obtener firmantes desde Mongo o datos locales
-    const firmantes = await obtenerFirmantes(datos);
+    const firmantes = await obtenerFirmantes({ ...datos, tipo_persona: tipoPersona }); // Enviar tipo_persona normalizado
 
     // Enviar contrato a Autentic
     const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
