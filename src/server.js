@@ -2,7 +2,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import firmaRoutes from "./src/routes/firma.routes.js";
+import firmaRoutes from "./routes/firma.routes.js";
 
 // Cargar variables de entorno desde .env
 dotenv.config();
