@@ -5,6 +5,6 @@ import { ejecutarProcesoFirma } from "../controllers/firmaController.js";
 const router = Router();
 
 // Ruta para iniciar el proceso de firma
-outer.post("/firmar", ejecutarProcesoFirma);
+router.post("/firmar", ejecutarProcesoFirma);
 
 export default router;
