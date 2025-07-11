@@ -1,47 +1,42 @@
 // services/contratoService.js
 import fs from "fs";
+import path from "path";
 import { execSync } from "child_process";
 import libre from "libreoffice-convert";
 import { promisify } from "util";
+
 const convertAsync = promisify(libre.convert);
 
 export async function generarContratoPDF(datos) {
-  try {
-    // 1. Escribir los datos recibidos en datosTemp.json
-    const rutaJson = "contratos/datosTemp.json";
-    fs.writeFileSync(rutaJson, JSON.stringify(datos, null, 2));
-    console.log("📦 Datos del contrato guardados en datosTemp.json");
-
-    // 2. Determinar si es contrato jurídico o natural
-    const tipo = datos.tipo_persona?.toLowerCase();
-    let scriptContrato = "";
-
-    if (tipo === "juridica") {
-      scriptContrato = "contratos/contratoJuridico.js";
-    } else if (tipo === "natural") {
-      scriptContrato = "contratos/contratoNatural.js";
-    } else {
-      throw new Error(`Tipo de persona no válido: ${datos.tipo_persona}`);
-    }
-
-    // 3. Ejecutar el script adecuado para generar el contrato DOCX
-    console.log(`📝 Generando contrato DOCX con: ${scriptContrato}`);
-    execSync(`node ${scriptContrato}`, { stdio: "inherit" });
-
-    // 4. Convertir DOCX a PDF
-    console.log("📄 Convirtiendo DOCX a PDF...");
-    const docxBuffer = fs.readFileSync("Contrato_Fianza.docx");
-    const pdfBuffer = await convertAsync(docxBuffer, ".pdf", undefined);
-    fs.writeFileSync("Contrato_Fianza.pdf", pdfBuffer);
-
-    // 5. Leer reglamento y codificar en base64
-    const reglamentoBuffer = fs.readFileSync("contratos/REGLAMENTO DE FIANZA AFFI.pdf");
-    const base64Reglamento = reglamentoBuffer.toString("base64");
-    const base64PDF = pdfBuffer.toString("base64");
-
-    return [base64PDF, base64Reglamento];
-  } catch (error) {
-    console.error("❌ Error generando contrato PDF:", error);
-    throw error;
+  const carpetaContratos = path.resolve("src/contratos");
+  if (!fs.existsSync(carpetaContratos)) {
+    fs.mkdirSync(carpetaContratos, { recursive: true });
   }
+
+  const rutaJSON = path.join(carpetaContratos, "datosTemp.json");
+  fs.writeFileSync(rutaJSON, JSON.stringify(datos, null, 2));
+  console.log("💾 Datos guardados en datosTemp.json");
+
+  // Luego ejecutas el contrato
+  const tipo = datos.tipo_persona?.toLowerCase();
+  if (tipo === "natural") {
+    execSync("node src/contratos/contratoNatural.js", { stdio: "inherit" });
+  } else if (tipo === "juridica" || tipo === "jurídica") {
+    execSync("node src/contratos/contratoJuridico.js", { stdio: "inherit" });
+  } else {
+    throw new Error("Tipo de persona no reconocido.");
+  }
+
+  // Leer DOCX generado
+  const docxPath = path.resolve("Contrato_Fianza.docx");
+  const docxBuffer = fs.readFileSync(docxPath);
+
+  // Convertir a PDF
+  const pdfBuffer = await convertAsync(docxBuffer, ".pdf", undefined);
+  const pdfPath = path.resolve("Contrato_Fianza.pdf");
+  fs.writeFileSync(pdfPath, pdfBuffer);
+  console.log("📄 Contrato convertido a PDF");
+
+  // Retornar como base64
+  return pdfBuffer.toString("base64");
 }

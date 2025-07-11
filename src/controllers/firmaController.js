@@ -2,44 +2,32 @@
 import { generarContratoPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";
+import path from "path";
+import fs from "fs";
 
 export async function ejecutarProcesoFirma(req, res) {
   try {
     const datos = req.body;
     console.log("📥 Datos recibidos del webhook:", datos);
 
-    if (!datos.tipo_persona || !datos.ciudad_inmobiliaria || !datos.numero_de_contrato) {
-      return res.status(400).json({
-        error: "Faltan campos obligatorios",
-        datosRecibidos: datos
-      });
+    // Validación mínima de campos obligatorios
+    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo) {
+      return res.status(400).json({ error: "Faltan datos obligatorios", datos });
     }
 
-    const tipoPersona = (datos.tipo_persona || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+    // Generar contrato PDF (usa internamente DOCX → PDF → Base64)
+    const base64Contrato = await generarContratoPDF(datos);
 
-    if (tipoPersona === "natural") {
-      datos.tipoContrato = "natural";
-    } else if (tipoPersona === "juridica") {
-      datos.tipoContrato = "juridico";
-    } else {
-      return res.status(400).json({
-        error: "Tipo de persona no válido",
-        tipo_persona: datos.tipo_persona
-      });
-    }
+    // Leer reglamento y convertir a base64
+    const reglamentoPath = path.resolve("REGLAMENTO_DE_FIANZA_AFFI.pdf");
+    const reglamentoBuffer = fs.readFileSync(reglamentoPath);
+    const base64Reglamento = reglamentoBuffer.toString("base64");
 
-    const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
+    // Obtener firmantes (cliente + internos desde Mongo)
+    const firmantes = await obtenerFirmantes(datos);
 
-    const firmantes = await obtenerFirmantes({ ...datos, tipo_persona: tipoPersona });
-
-    if (!firmantes || !Array.isArray(firmantes) || firmantes.length < 2) {
-      return res.status(500).json({ error: "No se pudieron obtener los firmantes correctamente." });
-    }
-
-    const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
+    // Enviar a Autentic
+    const resultado = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
 
     return res.status(200).json({
       message: "Proceso de firma iniciado correctamente",
