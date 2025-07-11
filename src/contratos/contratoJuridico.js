@@ -11,44 +11,20 @@ import {
   Header,
   PageNumber
 } from "docx";
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from "fs";
 
-const tarifaZonaCentro = 2.16; // Tarifa para la zona centro (Bogotá D.C.)
-const tarifaZonaRegular = 1.72; // Tarifa para la zona regular (otras ciudades)
+// 📦 Leer datos desde archivo temporal
+const raw = readFileSync("contratos/datosTemp.json", "utf-8");
+const input = JSON.parse(raw);
 
-// Función para calcular la tarifa según la ciudad inmobiliaria
-function calcularTarifa(ciudad_inmobiliaria) {
-  // Si la ciudad es "Bogotá D.C.", se devuelve la tarifa de la zona centro
-  if (ciudad_inmobiliaria == "Bogotá D.C.") {
-    return tarifaZonaCentro;
-  }
-  // Si no es Bogotá D.C., se devuelve la tarifa de la zona regular
-  else {
-    return tarifaZonaRegular;
-  }
+// 📌 Configuración de tarifas
+const tarifaZonaCentro = 2.16;
+const tarifaZonaRegular = 1.72;
+
+function calcularTarifa(ciudad) {
+  return ciudad === "Bogotá D.C." ? tarifaZonaCentro : tarifaZonaRegular;
 }
 
-const data = {
-  NUMERO_CONTRATO: 'CON123456789',
-  NOMBRE_INMOBILIARIA: 'Inmobiliaria Torres S.A.S.',
-  CIUDAD_INMOBILIARIA: 'Bogotá D.C.',
-  NIT_INMOBILIARIA: '800.123.456-7',
-  NOMBRE_REPRESENTANTE_LEGAL: 'Andrés Torres Gómez',
-  CEDULA_REPRESENTANTE_LEGAL: '79.123.456',
-  CIUDAD_EXPEDICION: 'Bogotá D.C.',
-};
-
-// Ahora calculas la tarifa según la ciudad
-data.TARIFA_SEGUN_ZONA = `${calcularTarifa(data.CIUDAD_INMOBILIARIA)}%`;
-
-// Convertir todas las variables a mayúsculas
-Object.keys(data).forEach(key => {
-  if (typeof data[key] === 'string') {
-    data[key] = data[key].toUpperCase();
-  }
-});
-
-// Función para convertir día a letras en español
 function numeroALetrasDia(n) {
   const dias = [
     "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
@@ -66,11 +42,28 @@ const meses = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
 ];
 
-// Insertar la fecha de hoy en el objeto data
-data.DIA_NUMEROS = hoy.getDate().toString();
-data.DIA_LETRAS = numeroALetrasDia(hoy.getDate());
-data.MES = meses[hoy.getMonth()];
-data.ANO = hoy.getFullYear().toString();
+// 🧾 Preparar datos del contrato
+const data = {
+  NUMERO_CONTRATO: input.numero_de_contrato,
+  NOMBRE_INMOBILIARIA: input.nombre_inmobiliaria,
+  CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
+  NIT_INMOBILIARIA: input.nit_inmobiliaria,
+  NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
+  CEDULA_REPRESENTANTE_LEGAL: input.cedula_representante_legal,
+  CIUDAD_EXPEDICION: input.ciudad_expedicion,
+  DIA_NUMEROS: hoy.getDate().toString(),
+  DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
+  MES: meses[hoy.getMonth()],
+  ANO: hoy.getFullYear().toString(),
+  TARIFA_SEGUN_ZONA: `${calcularTarifa(input.ciudad_inmobiliaria)}%`
+};
+
+// 🔠 Convertir todo a mayúsculas
+Object.keys(data).forEach(key => {
+  if (typeof data[key] === "string") {
+    data[key] = data[key].toUpperCase();
+  }
+});
 
 const doc = new Document({
   styles: {
@@ -1442,7 +1435,8 @@ const doc = new Document({
   }]
 });
 
+// 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
-  writeFileSync('src/contratos/Contrato_Fianza.docx', buffer);
-  console.log('✅ Documento generado con éxito como Contrato_Fianza.docx');
+  writeFileSync("Contrato_Fianza.docx", buffer);
+  console.log("✅ Contrato natural generado con éxito");
 });

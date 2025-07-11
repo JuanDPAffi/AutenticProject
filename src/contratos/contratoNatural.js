@@ -11,27 +11,13 @@ import {
   Header,
   PageNumber
 } from "docx";
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from "fs";
 
-const data = {
-  NUMERO_CONTRATO: 'CON123456789',
-  NOMBRE_INMOBILIARIA: 'Inmobiliaria Torres S.A.S.',
-  CIUDAD_INMOBILIARIA: 'Bogotá D.C',
-  NIT_INMOBILIARIA: '800.123.456-7',
-  NOMBRE_REPRESENTANTE_LEGAL: 'Andrés Torres Gómez',
-  CEDULA_REPRESENTANTE_LEGAL: '79.123.456',
-  CIUDAD_EXPEDICION: 'Bogotá D.C',
-  TARIFA_SEGUN_ZONA: '8.5%',
-};
+// 📦 Leer datos desde archivo temporal
+const raw = readFileSync("contratos/datosTemp.json", "utf-8");
+const input = JSON.parse(raw);
 
-// Convertir todas las variables a mayúsculas
-Object.keys(data).forEach(key => {
-  if (typeof data[key] === 'string') {
-    data[key] = data[key].toUpperCase();
-  }
-});
-
-// Función para convertir día a letras en español
+// 📌 Función para convertir día a letras
 function numeroALetrasDia(n) {
   const dias = [
     "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
@@ -49,11 +35,28 @@ const meses = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
 ];
 
-// Insertar la fecha de hoy en el objeto data
-data.DIA_NUMEROS = hoy.getDate().toString();
-data.DIA_LETRAS = numeroALetrasDia(hoy.getDate());
-data.MES = meses[hoy.getMonth()];
-data.ANO = hoy.getFullYear().toString();
+// 🧾 Datos del contrato para persona natural
+const data = {
+  NUMERO_CONTRATO: input.numero_de_contrato,
+  NOMBRE_CLIENTE_NATURAL: input.nombre_cliente_natural,
+  CEDULA_CLIENTE_NATURAL: input.cedula_cliente_natural,
+  CIUDAD_EXPEDICION_CLIENTE: input.ciudad_expedicion_cliente,
+  CIUDAD_RESIDENCIA_CLIENTE: input.ciudad_residencia_cliente,
+  DIRECCION_CLIENTE: input.direccion_cliente,
+  TELEFONO_CLIENTE: input.telefono_cliente,
+  CORREO_CLIENTE: input.correo_cliente,
+  DIA_NUMEROS: hoy.getDate().toString(),
+  DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
+  MES: meses[hoy.getMonth()],
+  ANO: hoy.getFullYear().toString()
+};
+
+// 🔠 Convertir todo a mayúsculas
+Object.keys(data).forEach(key => {
+  if (typeof data[key] === "string") {
+    data[key] = data[key].toUpperCase();
+  }
+});
 
 const doc = new Document({
   styles: {
@@ -1425,7 +1428,8 @@ const doc = new Document({
   }]
 });
 
+// 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
-  writeFileSync('Contrato_Fianza.docx', buffer);
-  console.log('✅ Documento generado con éxito como Contrato_Fianza.docx');
+  writeFileSync("Contrato_Fianza.docx", buffer);
+  console.log("✅ Contrato natural generado con éxito");
 });

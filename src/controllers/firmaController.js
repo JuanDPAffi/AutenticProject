@@ -1,54 +1,35 @@
-// controllers/firmaController.js
 import { generarContratoPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";
-import { obtenerAccessTokenHubSpot, obtenerDatosVinculacion } from "../services/hubspotService.js";
 
 export async function ejecutarProcesoFirma(req, res) {
   try {
-    let datos = req.body;
+    const datos = req.body;
+    console.log("📥 Datos recibidos del webhook:", datos);
 
-    // 🔍 Consultar datos desde HubSpot si solo se envía el ID
-    if (!datos.tipo_persona && datos.idVinculacion) {
-      console.log("🔎 Consultando datos en HubSpot para idVinculacion:", datos.idVinculacion);
-      const token = await obtenerAccessTokenHubSpot();
-      const propiedades = await obtenerDatosVinculacion(datos.idVinculacion, token);
-      datos = propiedades;
+    // Validar campos obligatorios
+    if (!datos.tipo_persona || !datos.ciudad_inmobiliaria || !datos.numero_de_contrato) {
+      return res.status(400).json({ error: "Faltan campos obligatorios", datosRecibidos: datos });
     }
 
-    console.log("📬 Datos obtenidos:", datos);
+    // Identificar si es persona natural o jurídica
+    const tipoPersona = datos.tipo_persona.toLowerCase();
 
-    // 🐞 Modo debug desde el payload (manual)
-    if (datos.debug === true || datos.debug === "true") {
-      console.log("🐞 Modo DEBUG activado desde el payload, no se genera contrato ni se envía a Autentic");
-      return res.status(200).json({ message: "DEBUG activado", datosRecibidos: datos });
+    if (tipoPersona === "natural") {
+      datos.tipoContrato = "natural";
+    } else if (tipoPersona === "juridica" || tipoPersona === "jurídica") {
+      datos.tipoContrato = "juridico";
+    } else {
+      return res.status(400).json({ error: "Tipo de persona no válido", tipo_persona: datos.tipo_persona });
     }
 
-    // ✅ Validar campos obligatorios antes de continuar
-    if (!datos.tipo_persona || !datos.ciudad) {
-      console.warn("⚠️ Faltan campos obligatorios: tipo_persona y/o ciudad");
-      return res.status(400).json({
-        error: "Faltan datos obligatorios: tipo_persona y/o ciudad",
-        datosRecibidos: datos,
-      });
-    }
-
-    // 🧪 MODO_PRUEBA desde variable de entorno (Azure)
-    if (process.env.MODO_PRUEBA === "true") {
-      const firmantes = await obtenerFirmantes(datos);
-      const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
-
-      console.log("🧪 MODO PRUEBA ACTIVADO - Solo generamos contratos, no se envía a Autentic");
-      return res.status(200).json({
-        message: "Modo prueba activado - contratos generados pero NO enviados a firma",
-        firmantes,
-        datosUsados: datos,
-      });
-    }
-
-    // 🔐 Producción real: firmar con Autentic
-    const firmantes = await obtenerFirmantes(datos);
+    // Generar y convertir contrato a PDF
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
+
+    // Obtener firmantes desde Mongo o datos locales
+    const firmantes = await obtenerFirmantes(datos);
+
+    // Enviar contrato a Autentic
     const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
 
     res.status(200).json({ message: "Proceso de firma iniciado", resultado });
