@@ -8,22 +8,36 @@ export async function ejecutarProcesoFirma(req, res) {
   try {
     let datos = req.body;
 
-    // Si solo viene el ID de la vinculación, consultamos en HubSpot
+    // 🔍 Consultar datos desde HubSpot si solo se envía el ID
     if (!datos.tipo_persona && datos.idVinculacion) {
       console.log("🔎 Consultando datos en HubSpot para idVinculacion:", datos.idVinculacion);
       const token = await obtenerAccessTokenHubSpot();
       const propiedades = await obtenerDatosVinculacion(datos.idVinculacion, token);
-      datos = propiedades; // sobreescribimos con los datos obtenidos de HubSpot
+      datos = propiedades;
     }
 
     console.log("📬 Datos obtenidos:", datos);
 
-    // Modo debug: si está activo, solo mostrar los datos y salir
+    // 🐞 Modo debug directo desde el payload (útil para pruebas manuales)
     if (datos.debug === true || datos.debug === "true") {
-      console.log("🐞 Modo DEBUG activado, no se genera contrato ni se envía a Autentic");
+      console.log("🐞 Modo DEBUG activado desde el payload, no se genera contrato ni se envía a Autentic");
       return res.status(200).json({ message: "DEBUG activado", datosRecibidos: datos });
     }
 
+    // 🧪 MODO_PRUEBA desde variables de entorno (control global desde Azure)
+    if (process.env.MODO_PRUEBA === "true") {
+      const firmantes = await obtenerFirmantes(datos);
+      const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
+
+      console.log("🧪 MODO PRUEBA ACTIVADO (env): Solo generamos contratos, no se envía a Autentic");
+      return res.status(200).json({
+        message: "Modo prueba activado - contratos generados pero NO enviados a firma",
+        firmantes,
+        datosUsados: datos,
+      });
+    }
+
+    // 🔐 Ejecución normal (modo producción real)
     const firmantes = await obtenerFirmantes(datos);
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
 
