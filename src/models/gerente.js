@@ -1,11 +1,12 @@
+// models/gerente.js
 import mongoose from "mongoose";
 
 const gerenteSchema = new mongoose.Schema({
-  cc: Number,
   name: String,
   last_name: String,
+  cc: Number,
   email: String,
-  type: String
-}, { collection: 'gerencias' });
+  type: { type: String, enum: ["Comercial", "General"] }
+});
 
-export const Gerente = mongoose.model('Gerente', gerenteSchema);
+export const Gerente = mongoose.model("Gerente", gerenteSchema);

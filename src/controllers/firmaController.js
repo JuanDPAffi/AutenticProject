@@ -1,3 +1,4 @@
+// controllers/firmaController.js
 import { generarContratoPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";
@@ -7,7 +8,6 @@ export async function ejecutarProcesoFirma(req, res) {
     const datos = req.body;
     console.log("📥 Datos recibidos del webhook:", datos);
 
-    // Validar campos obligatorios mínimos
     if (!datos.tipo_persona || !datos.ciudad_inmobiliaria || !datos.numero_de_contrato) {
       return res.status(400).json({
         error: "Faltan campos obligatorios",
@@ -15,11 +15,10 @@ export async function ejecutarProcesoFirma(req, res) {
       });
     }
 
-    // Normalizar tipo_persona para evitar errores por tildes o mayúsculas
     const tipoPersona = (datos.tipo_persona || "")
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, ""); // elimina tildes
+      .replace(/[\u0300-\u036f]/g, "");
 
     if (tipoPersona === "natural") {
       datos.tipoContrato = "natural";
@@ -32,17 +31,14 @@ export async function ejecutarProcesoFirma(req, res) {
       });
     }
 
-    // ✅ Generar contrato y reglamento en base64 PDF
     const [base64PDF, base64Reglamento] = await generarContratoPDF(datos);
 
-    // ✅ Obtener firmantes (cliente + comercial [+ gerencia])
     const firmantes = await obtenerFirmantes({ ...datos, tipo_persona: tipoPersona });
 
     if (!firmantes || !Array.isArray(firmantes) || firmantes.length < 2) {
       return res.status(500).json({ error: "No se pudieron obtener los firmantes correctamente." });
     }
 
-    // ✅ Enviar para firma a Autentic
     const resultado = await enviarParaFirma(base64Reglamento, base64PDF, firmantes);
 
     return res.status(200).json({

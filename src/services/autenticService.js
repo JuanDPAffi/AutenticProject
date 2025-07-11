@@ -13,7 +13,6 @@ const {
   senderIdentification
 } = autenticConfig;
 
-// 🔐 Obtener token desde Autentic
 async function obtenerToken() {
   const { data } = await axios.post(authUrl, {
     audience,
@@ -24,21 +23,18 @@ async function obtenerToken() {
   return data.access_token;
 }
 
-// 📅 Fecha de expiración del proceso
 function obtenerFechaExpiracion(dias = 7) {
   const fecha = new Date();
   fecha.setDate(fecha.getDate() + dias);
   return fecha.toISOString();
 }
 
-// 🚀 Enviar contrato para firma
 export async function enviarParaFirma(base64Reglamento, base64PDF, firmantes) {
   try {
     if (!Array.isArray(firmantes) || firmantes.length === 0) {
       throw new Error("No se proporcionaron firmantes válidos.");
     }
 
-    // Validación de campos mínimos por firmante
     for (const [i, f] of firmantes.entries()) {
       if (!f.name || !f.identification || !f.email) {
         throw new Error(`Firmante inválido en posición ${i + 1}: ${JSON.stringify(f)}`);
@@ -60,10 +56,12 @@ export async function enviarParaFirma(base64Reglamento, base64PDF, firmantes) {
             {
               content: base64Reglamento,
               fileName: "REGLAMENTO DE FIANZA AFFI.pdf",
+              requireSignature: false
             },
             {
               content: base64PDF,
               fileName: "Contrato_Fianza.pdf",
+              requireSignature: true
             }
           ],
           subject: "Firma del Contrato de Fianza",
