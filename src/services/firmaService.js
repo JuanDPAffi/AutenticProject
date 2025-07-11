@@ -1,7 +1,7 @@
 // services/firmaService.js
 import { Gerente } from "../models/gerente.js";
 
-function construirFirmante({ name, lastName = "", cc, email, phone = "", roleTemplate = "cliente" }) {
+function construirFirmante({ name, lastName = "", cc, email, phone = "" }) {
   return {
     name,
     lastName,
@@ -10,7 +10,6 @@ function construirFirmante({ name, lastName = "", cc, email, phone = "", roleTem
     phone,
     role: "SIGNER",
     authMethods: ["OTP"],
-    roleTemplate
   };
 }
 
@@ -38,8 +37,7 @@ export async function obtenerFirmantes(datos) {
       lastName: "",
       cc: datos.cedula_representante_legal,
       email: datos.correo,
-      phone: datos.numero_celular || "",
-      roleTemplate: "cliente"
+      phone: datos.numero_celular || ""
     });
   } else if (tipo === "natural") {
     if (!datos.nombre_persona_natural || !datos.cedula || !datos.correo) {
@@ -51,8 +49,7 @@ export async function obtenerFirmantes(datos) {
       lastName: "",
       cc: datos.cedula,
       email: datos.correo,
-      phone: datos.numero_celular || "",
-      roleTemplate: "cliente"
+      phone: datos.numero_celular || ""
     });
   } else {
     throw new Error(`Tipo de persona inválido: ${datos.tipo_persona}`);
@@ -65,16 +62,14 @@ export async function obtenerFirmantes(datos) {
       lastName: comercial.last_name,
       cc: comercial.cc,
       email: comercial.email,
-      phone: "", // puedes incluir si lo usas
-      roleTemplate: "comercial"
+      phone: ""
     }),
     construirFirmante({ 
       name: general.name,
       lastName: general.last_name,
       cc: general.cc,
       email: general.email,
-      phone: "",
-      roleTemplate: "gerencia"
+      phone: ""
     })
   ];
 }
