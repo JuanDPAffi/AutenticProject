@@ -1,10 +1,19 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import axios from "axios";
 import fs from "fs";
-import { autenticConfig } from "./config/autentic.config.js";
 
-const { authUrl, audience, clientId, clientSecret, signingUrl } = autenticConfig;
+// ✅ Leer variables desde el .env
+const {
+  AUTH_URL: authUrl,
+  AUDIENCE: audience,
+  CLIENT_ID: clientId,
+  CLIENT_SECRET: clientSecret,
+  SIGNING_URL: signingUrl
+} = process.env;
 
-// Obtener token
+// ✅ Obtener token
 async function obtenerToken() {
   const { data } = await axios.post(authUrl, {
     audience,
@@ -15,7 +24,7 @@ async function obtenerToken() {
   return data.access_token;
 }
 
-// Descargar archivos del proceso
+// ✅ Descargar archivos del proceso
 async function descargarArchivos(processId, token) {
   const { data } = await axios.get(
     `${signingUrl}get-files/${processId}`,
@@ -32,11 +41,11 @@ async function descargarArchivos(processId, token) {
   }
 }
 
-// Ejecutar
+// ✅ Ejecutar
 (async () => {
   try {
     const token = await obtenerToken();
-    await descargarArchivos("65c91354", token); // Cambia este ID por el que necesites
+    await descargarArchivos("65c91354", token); // Reemplaza con el ID real del proceso
   } catch (err) {
     console.error("❌ Error:", err.message || err);
   }

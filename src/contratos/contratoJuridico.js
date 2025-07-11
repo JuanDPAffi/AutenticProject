@@ -13,16 +13,33 @@ import {
 } from "docx";
 import { writeFileSync } from 'fs';
 
+const tarifaZonaCentro = 2.16; // Tarifa para la zona centro (Bogotá D.C.)
+const tarifaZonaRegular = 1.72; // Tarifa para la zona regular (otras ciudades)
+
+// Función para calcular la tarifa según la ciudad inmobiliaria
+function calcularTarifa(ciudad_inmobiliaria) {
+  // Si la ciudad es "Bogotá D.C.", se devuelve la tarifa de la zona centro
+  if (ciudad_inmobiliaria == "Bogotá D.C.") {
+    return tarifaZonaCentro;
+  }
+  // Si no es Bogotá D.C., se devuelve la tarifa de la zona regular
+  else {
+    return tarifaZonaRegular;
+  }
+}
+
 const data = {
   NUMERO_CONTRATO: 'CON123456789',
   NOMBRE_INMOBILIARIA: 'Inmobiliaria Torres S.A.S.',
-  CIUDAD_INMOBILIARIA: 'Bogotá D.C',
+  CIUDAD_INMOBILIARIA: 'Bogotá D.C.',
   NIT_INMOBILIARIA: '800.123.456-7',
   NOMBRE_REPRESENTANTE_LEGAL: 'Andrés Torres Gómez',
   CEDULA_REPRESENTANTE_LEGAL: '79.123.456',
-  CIUDAD_EXPEDICION: 'Bogotá D.C',
-  TARIFA_SEGUN_ZONA: '8.5%',
+  CIUDAD_EXPEDICION: 'Bogotá D.C.',
 };
+
+// Ahora calculas la tarifa según la ciudad
+data.TARIFA_SEGUN_ZONA = `${calcularTarifa(data.CIUDAD_INMOBILIARIA)}%`;
 
 // Convertir todas las variables a mayúsculas
 Object.keys(data).forEach(key => {
@@ -1426,6 +1443,6 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buffer => {
-  writeFileSync('Contrato_Fianza.docx', buffer);
+  writeFileSync('src/contratos/Contrato_Fianza.docx', buffer);
   console.log('✅ Documento generado con éxito como Contrato_Fianza.docx');
 });

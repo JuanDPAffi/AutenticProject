@@ -1,9 +1,18 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import axios from "axios";
-import { autenticConfig } from "./config/autentic.config.js";
 
-const { authUrl, audience, clientId, clientSecret, signingUrl } = autenticConfig;
+// ✅ Leer variables desde .env directamente
+const {
+  AUTH_URL: authUrl,
+  AUDIENCE: audience,
+  CLIENT_ID: clientId,
+  CLIENT_SECRET: clientSecret,
+  SIGNING_URL: signingUrl
+} = process.env;
 
-// Obtener token de autenticación
+// ✅ Obtener token de autenticación
 async function obtenerToken() {
   const { data } = await axios.post(authUrl, {
     audience,
@@ -14,7 +23,7 @@ async function obtenerToken() {
   return data.access_token;
 }
 
-// Consultar estado del proceso
+// ✅ Consultar estado del proceso
 async function consultarEstado(massiveProcessingId, token) {
   const { data } = await axios.get(
     `${signingUrl}${massiveProcessingId}`,
@@ -29,11 +38,11 @@ async function consultarEstado(massiveProcessingId, token) {
   console.log(JSON.stringify(data, null, 2));
 }
 
-// Ejecutar consulta
+// ✅ Ejecutar consulta
 (async () => {
   try {
     const token = await obtenerToken();
-    await consultarEstado('c19c63aa-c5ff-4741-93d3-c8a97537b146-20250710154959', token);
+    await consultarEstado('3d729186-4fb8-4bbb-bbd6-b699058bbf45-20250710202946', token);
   } catch (err) {
     console.error("❌ Error:", err.message || err);
   }
