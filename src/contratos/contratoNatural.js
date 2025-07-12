@@ -15,9 +15,7 @@ import { writeFileSync, readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rutaJSON = path.resolve(__dirname, "datosTemp.json");
-
+const rutaJSON = "/tmp/datosTemp.json";
 const raw = readFileSync(rutaJSON, "utf-8");
 const input = JSON.parse(raw);
 

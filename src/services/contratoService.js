@@ -13,9 +13,9 @@ export async function generarContratoPDF(datos) {
     fs.mkdirSync(carpetaContratos, { recursive: true });
   }
 
-  const rutaJSON = path.join(carpetaContratos, "datosTemp.json");
+  const rutaJSON = "/tmp/datosTemp.json";
   fs.writeFileSync(rutaJSON, JSON.stringify(datos, null, 2));
-  console.log("💾 Datos guardados en datosTemp.json");
+  console.log("💾 Datos guardados en /tmp/datosTemp.json");
 
   // Luego ejecutas el contrato
   const tipo = datos.tipo_persona?.toLowerCase();

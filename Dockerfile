@@ -1,14 +1,14 @@
 # Imagen base con Node.js
 FROM node:18
 
-# Instalar LibreOffice
+# Instalar LibreOffice para la conversión de DOCX a PDF
 RUN apt-get update && \
     apt-get install -y libreoffice && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Crear directorio de la aplicación
-WORKDIR /app
+# Establecer directorio de trabajo dentro del contenedor
+WORKDIR /usr/src/app
 
 # Copiar archivos de dependencias e instalar
 COPY package*.json ./
@@ -17,14 +17,11 @@ RUN npm install
 # Copiar todo el proyecto
 COPY . .
 
-# Crear explícitamente la carpeta de contratos si no existe
-RUN mkdir -p /app/src/contratos
+# Crear carpeta de contratos y dar permisos (por si necesitas escribir en runtime)
+RUN mkdir -p src/contratos && chmod -R 755 src/contratos
 
-# Establecer permisos (evita problemas con archivos de escritura en Docker)
-RUN chmod -R 755 /app/src/contratos
-
-# Exponer el puerto de la API
+# Exponer el puerto 3000 que usa tu app
 EXPOSE 3000
 
-# Comando por defecto
+# Comando por defecto para iniciar la aplicación
 CMD ["node", "src/server.js"]
