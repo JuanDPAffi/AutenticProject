@@ -77,12 +77,14 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
       }
     });
 
+    console.log("📥 Respuesta de Autentic:", JSON.stringify(data, null, 2));
+
     console.log("✅ Proceso enviado a Autentic con éxito");
-    
+
     const massiveProcessingId = data?.processes?.[0]?.massiveProcessingId;
     return {
-      massiveProcessingId, // 👈 ahora está explícito
-      raw: data             // opcional: incluir toda la respuesta si quieres usarla más adelante
+      massiveProcessingId,
+      raw: data
     };
 
   } catch (error) {
@@ -95,5 +97,5 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
 function obtenerFechaExpiracion(dias) {
   const fecha = new Date();
   fecha.setDate(fecha.getDate() + dias);
-  return fecha.toISOString().split("T")[0]; // ✅ "2025-07-18"
+  return fecha.toISOString().split("T")[0];
 }
