@@ -118,3 +118,5 @@ export async function consultarProcesoPorMassiveId(massiveProcessingId, token) {
     throw new Error("No se pudo consultar el estado del proceso en Autentic");
   }
 }
+
+export { obtenerToken };
