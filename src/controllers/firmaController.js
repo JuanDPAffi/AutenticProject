@@ -31,10 +31,17 @@ export async function ejecutarProcesoFirma(req, res) {
     const firmantes = await obtenerFirmantes(datos);
 
     // 4. Enviar a Autentic
-    const resultado = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
+    const { massiveProcessingId, raw: resultado } = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
+
+    // Validar que venga el massiveProcessingId
+    if (!massiveProcessingId) {
+      throw new Error("massiveProcessingId no retornado por Autentic");
+    }
+
+    console.log("🔁 massiveProcessingId recibido:", massiveProcessingId);
 
     return res.status(200).json({
-      massiveProcessingId, // 👈 Ahora HubSpot podrá mapear esta propiedad
+      massiveProcessingId,
       message: "✅ Proceso de firma iniciado correctamente",
       resultado
     });
