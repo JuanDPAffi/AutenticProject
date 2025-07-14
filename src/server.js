@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import firmaRoutes from "./routes/firma.routes.js";
+import estadoRoutes from "./routes/estado.routes.js";
 
 // Cargar variables de entorno desde .env
 dotenv.config();
@@ -20,6 +21,8 @@ app.get("/api/test", (req, res) => {
 // Cargar rutas de firma
 console.log("📦 Cargando rutas..."); // <-- esto debería aparecer en docker logs
 app.use("/api", firmaRoutes);
+
+app.use("/api/procesos", estadoRoutes);
 
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI, {

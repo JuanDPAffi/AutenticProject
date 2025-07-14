@@ -99,3 +99,22 @@ function obtenerFechaExpiracion(dias) {
   fecha.setDate(fecha.getDate() + dias);
   return fecha.toISOString().split("T")[0];
 }
+
+// 🔍 Consultar estado del proceso en Autentic por massiveProcessingId
+export async function consultarProcesoPorMassiveId(massiveProcessingId, token) {
+  try {
+    const url = `https://gateway.autenticsign.com/v2/processes/massive/${massiveProcessingId}`;
+    const { data } = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    console.log("📥 Respuesta de estado de proceso:", JSON.stringify(data, null, 2));
+    return data;
+
+  } catch (error) {
+    console.error("❌ Error al consultar proceso por massiveProcessingId:", error.response?.data || error.message);
+    throw new Error("No se pudo consultar el estado del proceso en Autentic");
+  }
+}
