@@ -121,3 +121,41 @@ export async function consultarProcesoPorMassiveId(massiveProcessingId, token) {
 }
 
 export { obtenerToken };
+
+// 📥 Descargar archivos firmados usando el processId
+export async function descargarArchivosFirmados(processId, token) {
+  try {
+    const url = `${process.env.END_POINT_API_GET_FILE}/${processId}`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const archivos = response.data?.body?.files || [];
+
+    if (!archivos.length) {
+      throw new Error("No se encontraron documentos firmados para este proceso.");
+    }
+
+    console.log(`📄 ${archivos.length} documentos firmados encontrados.`);
+
+    // Descargar cada archivo y convertirlo en Buffer
+    const archivosDescargados = await Promise.all(archivos.map(async (doc) => {
+      const binario = await axios.get(doc.url, {
+        responseType: "arraybuffer"
+      });
+
+      return {
+        name: doc.name, // 👈 CAMBIO: usar 'name' en lugar de 'nombre'
+        buffer: Buffer.from(binario.data)
+      };
+    }));
+
+    return archivosDescargados;
+
+  } catch (error) {
+    console.error("❌ Error al descargar archivos firmados:", error.response?.data || error.message);
+    throw new Error("Fallo al obtener archivos desde Autentic");
+  }
+}
