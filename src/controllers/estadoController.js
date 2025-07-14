@@ -14,8 +14,10 @@ export async function consultarYActualizarEstadoProceso(req, res) {
     const token = await obtenerToken();
     const proceso = await consultarProcesoPorMassiveId(massiveProcessingId, token);
 
-    const processId = proceso?.body?.processId || null;
-    const status = proceso?.body?.status || "UNKNOWN";
+    console.log("🔎 Respuesta completa de Autentic:", JSON.stringify(proceso, null, 2));
+
+    const processId = proceso?.body?.processId
+    const status = proceso?.body?.status;
 
     return res.status(200).json({
       ProcessId: processId,
