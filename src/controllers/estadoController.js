@@ -16,8 +16,9 @@ export async function consultarYActualizarEstadoProceso(req, res) {
 
     console.log("🔎 Respuesta completa de Autentic:", JSON.stringify(proceso, null, 2));
 
-    const processId = proceso?.body?.processId
-    const status = proceso?.body?.status;
+    const processData = proceso?.body?.processes?.[0];
+    const processId = processData?.processId || null;
+    const status = processData?.status || "UNKNOWN";
 
     return res.status(200).json({
       ProcessId: processId,
