@@ -100,10 +100,11 @@ function obtenerFechaExpiracion(dias) {
   return fecha.toISOString().split("T")[0];
 }
 
-// 🔍 Consultar estado del proceso en Autentic por massiveProcessingId
+const BASE_URL = process.env.AUTENTIC_API_BASE
+
 export async function consultarProcesoPorMassiveId(massiveProcessingId, token) {
   try {
-    const url = `https://gateway.autenticsign.com/v2/processes/massive/${massiveProcessingId}`;
+    const url = `${BASE_URL}/v3/signing-process/${massiveProcessingId}`;
     const { data } = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`
