@@ -34,6 +34,7 @@ export async function ejecutarProcesoFirma(req, res) {
     const resultado = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
 
     return res.status(200).json({
+      massiveProcessingId, // 👈 Ahora HubSpot podrá mapear esta propiedad
       message: "✅ Proceso de firma iniciado correctamente",
       resultado
     });

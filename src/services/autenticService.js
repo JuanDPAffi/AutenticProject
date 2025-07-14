@@ -78,7 +78,12 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
     });
 
     console.log("✅ Proceso enviado a Autentic con éxito");
-    return data;
+    
+    const massiveProcessingId = data?.processes?.[0]?.massiveProcessingId;
+    return {
+      massiveProcessingId, // 👈 ahora está explícito
+      raw: data             // opcional: incluir toda la respuesta si quieres usarla más adelante
+    };
 
   } catch (error) {
     console.error("❌ Error enviando a Autentic:", error.response?.data || error.message);
