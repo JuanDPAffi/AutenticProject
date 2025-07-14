@@ -81,7 +81,7 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
 
     console.log("✅ Proceso enviado a Autentic con éxito");
 
-    const massiveProcessingId = data?.processes?.[0]?.massiveProcessingId;
+    const massiveProcessingId = data?.body?.massiveProcessingId;
     return {
       massiveProcessingId,
       raw: data
