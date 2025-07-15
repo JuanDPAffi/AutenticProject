@@ -79,7 +79,7 @@ const capitalesDepartamentales = JSON.parse(fs.readFileSync(rutaCiudades, "utf-8
 const ciudad = input.ciudad_inmobiliaria;
 const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
 
-const UBICACION_GEOGRAFICA = esCapitalDepartamentamental
+const UBICACION_GEOGRAFICA = esCapitalDepartamental
   ? `en la ciudad de ${ciudad}`
   : `en el municipio de ${ciudad}`;
 
