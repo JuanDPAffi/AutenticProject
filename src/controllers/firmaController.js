@@ -11,8 +11,15 @@ export async function ejecutarProcesoFirma(req, res) {
     console.log("📥 Datos recibidos del webhook:", datos);
 
     // Validación mínima de campos obligatorios
-    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo) {
+    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo || !datos.numero_celular) {
       return res.status(400).json({ error: "Faltan datos obligatorios", datos });
+    }
+
+    // 🔧 Validar y transformar número de celular
+    if (datos.numero_celular && typeof datos.numero_celular === 'string' && datos.numero_celular.startsWith('+57')) {
+      const celularOriginal = datos.numero_celular;
+      datos.numero_celular = datos.numero_celular.substring(3); // Eliminar los primeros 3 caracteres (+57)
+      console.log(`📞 Celular transformado: ${celularOriginal} -> ${datos.numero_celular}`);
     }
 
     // 1. Generar contrato DOCX, convertir a PDF y base64
