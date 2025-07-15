@@ -11,7 +11,7 @@ import {
   Header,
   PageNumber
 } from "docx";
-import { writeFileSync, readFileSync } from "fs";
+import { writeFileSync, readFileSync, fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
