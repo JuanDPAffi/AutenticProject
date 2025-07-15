@@ -60,12 +60,29 @@ const data = {
   TARIFA_SEGUN_ZONA: `${calcularTarifa(input.ciudad_inmobiliaria)}%`
 };
 
+console.log("✅ Datos para el contrato:", data);
+
 // 🔠 Convertir todo a mayúsculas
 Object.keys(data).forEach(key => {
   if (typeof data[key] === "string") {
     data[key] = data[key].toUpperCase();
   }
 });
+
+// Obtener __dirname (en módulos ES)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ruta al archivo JSON
+const rutaCiudades = path.join(__dirname, "ciudades.json");
+const capitalesDepartamentales = JSON.parse(fs.readFileSync(rutaCiudades, "utf-8"));
+
+const ciudad = input.ciudad_inmobiliaria;
+const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
+
+const UBICACION_GEOGRAFICA = esCapitalDepartamentamental
+  ? `en la ciudad de ${ciudad}`
+  : `en el municipio de ${ciudad}`;
 
 const doc = new Document({
   styles: {
@@ -183,7 +200,7 @@ const doc = new Document({
           new TextRun({ break: 1 }),
           new TextRun({ text: data.NOMBRE_INMOBILIARIA, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` sociedad legalmente constituida con domicilio en la ciudad de ${data.CIUDAD_INMOBILIARIA} bajo el NIT No ${data.NIT_INMOBILIARIA} representada en este acto por ${data.NOMBRE_REPRESENTANTE_LEGAL} identificado con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL} de ${data.CIUDAD_EXPEDICION} en su calidad de Representante Legal existencia y representación que se acredita con certificación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
+            text: ` sociedad legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} bajo el NIT No ${data.NIT_INMOBILIARIA} representada en este acto por ${data.NOMBRE_REPRESENTANTE_LEGAL} identificado con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL} de ${data.CIUDAD_EXPEDICION} en su calidad de Representante Legal existencia y representación que se acredita con certificación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
             font: 'Arial MT',
             size: 22
           }),
@@ -308,7 +325,7 @@ const doc = new Document({
           new TextRun({ break: 1 }),
           new TextRun({ text: 'TERCERA.', bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` Lugar de ejecución. - Las partes acuerdan que las obligaciones garantizadas serán aquellas que se deriven de los contratos de arrendamientos de los inmuebles ubicados en la ciudad de ${data.CIUDAD_INMOBILIARIA}, lo que no signiﬁca que la cobertura no pueda ampliarse a otras ciudades siempre y cuando así se pacte por escrito.`,
+            text: ` Lugar de ejecución. - Las partes acuerdan que las obligaciones garantizadas serán aquellas que se deriven de los contratos de arrendamientos de los inmuebles ubicados ${UBICACION_GEOGRAFICA}, lo que no signiﬁca que la cobertura no pueda ampliarse a otras ciudades siempre y cuando así se pacte por escrito.`,
             font: 'Arial MT',
             size: 22
           }),
@@ -446,7 +463,7 @@ const doc = new Document({
         spacing: { before: 0, after: 0, line: 240 },
         children: [
           new TextRun({
-            text: `Para el afianzamiento de cánones de arrendamiento la tarifa aplicable sobre el monto a afianzar será del ${data.TARIFA_SEGUN_ZONA} más IVA para contratos celebrados en la ciudad ${data.CIUDAD_INMOBILIARIA}.`,
+            text: `Para el afianzamiento de cánones de arrendamiento la tarifa aplicable sobre el monto a afianzar será del ${data.TARIFA_SEGUN_ZONA} más IVA para contratos celebrados ${UBICACION_GEOGRAFICA}.`,
             font: 'Arial MT',
             size: 22
           })
