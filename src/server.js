@@ -2,7 +2,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import routes from "./routes/index.js";
-import connectDB from "./config/db.js"; 
+import connectDB from "./db.js"; 
 
 // Cargar variables de entorno desde .env
 dotenv.config();
