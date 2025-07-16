@@ -11,7 +11,7 @@ import {
   Header,
   PageNumber
 } from "docx";
-import { writeFileSync, readFileSync, fs } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -75,7 +75,7 @@ const __dirname = path.dirname(__filename);
 
 // Ruta al archivo JSON
 const rutaCiudades = path.join(__dirname, "ciudades.json");
-const capitalesDepartamentales = JSON.parse(fs.readFileSync(rutaCiudades, "utf-8"));
+const capitalesDepartamentales = JSON.parse(readFileSync(rutaCiudades, "utf-8"));
 
 const ciudad = input.ciudad_inmobiliaria;
 const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
