@@ -1,13 +1,12 @@
 // server.js
 import express from "express";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import routes from "./routes/index.js";
-import connectDB from "./db.js"; 
 
 // Cargar variables de entorno desde .env
 dotenv.config();
 
-// Crear la aplicación Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -22,15 +21,16 @@ app.get("/api/test", (req, res) => {
 console.log("📦 Cargando rutas..."); // <-- esto debería aparecer en docker logs
 app.use("/api", routes);
 
-app.use((req, res) => {
-  res.status(404).json({ error: "Ruta no encontrada" });
-});
+console.log(routes); // <-- esto debería aparecer en docker logs
 
-connectDB();
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor iniciado en http://localhost:${PORT}`);
-
-  // Mostrar las rutas cargadas
-  console.log("API routes:");
-  console.log(routes);
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  dbName: process.env.MONGO_DB,
+}).then(() => {
+  console.log("✅ Conectado a MongoDB");
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor iniciado en http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  console.error("❌ Error conectando a MongoDB:", err);
 });
