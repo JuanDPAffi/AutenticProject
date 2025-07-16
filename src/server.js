@@ -1,8 +1,8 @@
 // server.js
 import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
 import routes from "./routes/index.js";
+import connectDB from "./config/db.js"; 
 
 // Cargar variables de entorno desde .env
 dotenv.config();

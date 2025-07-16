@@ -1,5 +1,5 @@
 # Imagen base con Node.js
-FROM node:18
+FROM node:20
 
 # Instalar LibreOffice para la conversión de DOCX a PDF
 RUN apt-get update && \
