@@ -8,7 +8,7 @@ import "dotenv/config";
 const connectDB = async () => {
     try {
         // Intentamos establecer la conexión con la base de datos utilizando el URI almacenado en las variables de entorno
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(process.env.MONGO_URI);
 
         // Si la conexión es exitosa, se muestra un mensaje en consola
         console.log("Conectado a la base de datos MongoDB");
