@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 // Cargar variables de entorno desde .env
 dotenv.config();
 
+// Crear la aplicación Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
