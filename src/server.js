@@ -9,6 +9,7 @@ import adjuntarContratoRouter from "./routes/adjuntarContrato.routes.js";
 // Cargar variables de entorno desde .env
 dotenv.config();
 
+// Crear instancia de Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
