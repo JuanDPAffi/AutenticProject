@@ -59,4 +59,4 @@ jobs:
           app-name: 'autenticSignIntegracion'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C6581E1D65ED48128C0D4D86A7226FF5 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_53BC475639EF4315876F36316E3B373C }}
