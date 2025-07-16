@@ -29,6 +29,7 @@ connectDB();
 app.listen(PORT, () => {
   console.log(`🚀 Servidor iniciado en http://localhost:${PORT}`);
 
+  // Mostrar las rutas cargadas
   console.log("API routes:");
   console.log(routes);
 });
