@@ -21,7 +21,7 @@ COPY . .
 RUN mkdir -p src/contratos && chmod -R 755 src/contratos
 
 # Exponer el puerto 3000 que usa tu app
-EXPOSE 3000
+EXPOSE 80
 
 # Comando por defecto para iniciar la aplicación
 CMD ["node", "src/server.js"]
