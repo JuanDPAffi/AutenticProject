@@ -1429,7 +1429,7 @@ const doc = new Document({
                 width: { size: 50, type: WidthType.PERCENTAGE },
                 borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
                 children: [
-                  new Paragraph({ text: data.NOMBRE_REPRESENTANTE_LEGAL, font: 'Arial MT', size: 22 }),
+                  new Paragraph({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: `C.C. No ${data.CEDULA_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: "Representante legal", font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: data.NOMBRE_INMOBILIARIA, font: 'Arial MT', size: 22 }),
