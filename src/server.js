@@ -18,20 +18,17 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(express.json());
 
+// Ruta de prueba para saber si el servidor arranca
 app.get("/api/test", (req, res) => {
   res.json({ message: "Ruta funcionando" });
 });
 
-// Cargar rutas de firma
-console.log("📦 Cargando rutas..."); // <-- esto debería aparecer en docker logs
+// Cargar rutas
+console.log("📦 Cargando rutas...");
 app.use("/api", firmaRoutes);
-
 app.use("/api/procesos", estadoRoutes);
-
 app.use("/api", adjuntarContratoRouter);
-
 app.use("/api", emailReminderRoutes);
-
 app.use("/api", procesoRoutes);
 
 // Conexión a MongoDB
@@ -44,4 +41,17 @@ mongoose.connect(process.env.MONGO_URI, {
   });
 }).catch((err) => {
   console.error("❌ Error conectando a MongoDB:", err);
+  // Iniciar igual para poder testear el contenedor aunque falle Mongo
+  app.listen(PORT, () => {
+    console.log(`⚠️ Servidor iniciado sin conexión a MongoDB en http://localhost:${PORT}`);
+  });
+});
+
+// Captura de errores no controlados
+process.on("uncaughtException", (err) => {
+  console.error("💥 uncaughtException:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("💥 unhandledRejection:", reason);
 });
