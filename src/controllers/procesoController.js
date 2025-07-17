@@ -2,6 +2,7 @@
 import Proceso from "../models/procesoModel.js";
 import getDatosEmailRemember from "../utils/getDatosEmailRemember.js";
 import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js"; // esta función la creamos abajo
+import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js";
 
 export const registrarProcesoDesdeCorreo = async (req, res) => {
   try {
