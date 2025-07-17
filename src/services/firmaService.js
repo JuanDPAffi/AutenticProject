@@ -30,25 +30,25 @@ export async function obtenerFirmantes(datos) {
   let cliente = null;
 
   if (tipo === "juridica" || tipo === "jurídica") {
-    if (!datos.nombre_representante_legal || !datos.cedula_representante_legal || !datos.correo) {
+    if (!datos.nombre_representante_legal||!datos.apellido_representante_legal || !datos.cedula_representante_legal || !datos.correo) {
       throw new Error("Faltan datos del representante legal.");
     }
 
     cliente = construirFirmante({
       name: datos.nombre_representante_legal,
-      lastName: "",
+      lastName: datos.apellido_representante_legal,
       cc: datos.cedula_representante_legal,
       email: datos.correo,
       phone: datos.numero_celular || ""
     });
   } else if (tipo === "natural") {
-    if (!datos.nombre_persona_natural || !datos.cedula || !datos.correo) {
+    if (!datos.nombre_representante_legal||!datos.apellido_representante_legal || !datos.cedula || !datos.correo) {
       throw new Error("Faltan datos del cliente natural.");
     }
 
     cliente = construirFirmante({
-      name: datos.nombre_persona_natural,
-      lastName: "",
+      name: datos.nombre_representante_legal,
+      lastName: datos.apellido_representante_legal,
       cc: datos.cedula,
       email: datos.correo,
       phone: datos.numero_celular || ""

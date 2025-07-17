@@ -50,6 +50,7 @@ const data = {
   NUMERO_CONTRATO: input.numero_de_contrato,
   CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
   NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
+  APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: input.cedula_representante_legal,
   NOMBRE_ESTABLECIMIENTO_COMERCIO: input.nombre_establecimiento_comercio,
   DIA_NUMEROS: hoy.getDate().toString(),
@@ -197,7 +198,7 @@ const doc = new Document({
         spacing: { before: 0, after: 0, line: 240 },
         children: [
           new TextRun({ break: 1 }),
-          new TextRun({ text: data.NOMBRE_REPRESENTANTE_LEGAL, bold: true, font: 'Arial MT', size: 22 }),
+          new TextRun({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
             text: ` persona natural con establecimiento de comercio legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL}, en su calidad de propietaria de establecimiento de comercio que se acredita con certiﬁcación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
             font: 'Arial MT',
@@ -1427,7 +1428,7 @@ const doc = new Document({
                 width: { size: 50, type: WidthType.PERCENTAGE },
                 borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
                 children: [
-                  new Paragraph({ text: data.NOMBRE_REPRESENTANTE_LEGAL, font: 'Arial MT', size: 22 }),
+                  new Paragraph({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: `C.C. No ${data.CEDULA_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: "Representante legal", font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: data.NOMBRE_ESTABLECIMIENTO_COMERCIO, font: 'Arial MT', size: 22 })                ]

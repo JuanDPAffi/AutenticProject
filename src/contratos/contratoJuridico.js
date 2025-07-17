@@ -51,6 +51,7 @@ const data = {
   CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
   NIT_INMOBILIARIA: input.nit_inmobiliaria,
   NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
+  APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: input.cedula_representante_legal,
   CIUDAD_EXPEDICION: input.ciudad_expedicion,
   DIA_NUMEROS: hoy.getDate().toString(),
