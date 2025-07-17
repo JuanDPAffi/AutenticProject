@@ -6,6 +6,7 @@ import firmaRoutes from "./routes/firma.routes.js";
 import estadoRoutes from "./routes/estado.routes.js";
 import adjuntarContratoRouter from "./routes/adjuntarContrato.routes.js";
 import procesoRoutes from "./routes/proceso.routes.js";
+import emailReminderRoutes from "./routes/emailReminder.routes.js";
 
 // Cargar variables de entorno desde .env
 dotenv.config();
@@ -28,6 +29,8 @@ app.use("/api", firmaRoutes);
 app.use("/api/procesos", estadoRoutes);
 
 app.use("/api", adjuntarContratoRouter);
+
+app.use("/api", emailReminderRoutes);
 
 app.use("/api", procesoRoutes);
 
