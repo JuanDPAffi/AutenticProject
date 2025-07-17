@@ -11,7 +11,7 @@ export async function ejecutarProcesoFirma(req, res) {
     console.log("📥 Datos recibidos del webhook:", datos);
 
     // Validación mínima de campos obligatorios
-    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo =) {
+    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo ) {
       return res.status(400).json({ error: "Faltan datos obligatorios", datos });
     }
 
