@@ -3,6 +3,7 @@ import { gestionarRecordatorioDesdeHubspot } from "../controllers/emailReminderC
 
 const router = express.Router();
 
+// Gerencias
 router.post("/hubspot/emailReminder", gestionarRecordatorioDesdeHubspot);
 
 export default router;
