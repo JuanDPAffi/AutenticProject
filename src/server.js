@@ -7,7 +7,7 @@ import estadoRoutes from "./routes/estado.routes.js";
 import adjuntarContratoRouter from "./routes/adjuntarContrato.routes.js";
 import procesoRoutes from "./routes/proceso.routes.js";
 import emailReminderRoutes from "./routes/emailReminder.routes.js";
-import emailReminderDirectorRoutes from "./routes/emailReminderDirector.js";
+import emailReminderDirectorRoutes from "./routes/emailReminderDirector.routes.js";
 
 // Cargar variables de entorno desde .env
 dotenv.config();
