@@ -36,16 +36,9 @@ export const registrarProcesoDesdeCorreo = async (req, res) => {
       await Proceso.updateOne({ processId }, { $set: { asunto: asunto.trim(), firmante, modificado } });
     }
 
-    // 📧 Enviar recordatorio al firmante pendiente
-    const pendiente = determinarFirmantePendiente(asunto.trim(), firmante);
-    if (pendiente) {
-      await enviarCorreoRecordatorio(pendiente, processId);
-      console.log(`📧 Recordatorio enviado a ${pendiente}`);
-    }
-
     // Creamos un objeto de respuesta que incluya el asunto
     const datosRespuesta = { processId, asunto: asunto.trim(), firmante, fecha, modificado };
-    res.status(200).json({ message: "✅ Proceso registrado y recordatorio gestionado", datos: datosRespuesta });
+    res.status(200).json({ message: "✅ Proceso registrado correctamente", datos: datosRespuesta });
 
   } catch (error) {
     console.error("❌ Error:", error.message);

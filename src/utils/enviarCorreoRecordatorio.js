@@ -82,6 +82,17 @@ export default async function enviarCorreoRecordatorio(destinatario, processId, 
 
   const fechaEnvio = new Date().toLocaleDateString("es-CO");
 
+  // 🔎 LOG para verificar los valores
+  console.log("📦 Datos enviados a la plantilla:");
+  console.log({
+    destinatario,
+    numContrato,
+    nombreCliente,
+    fechaEnvio,
+    processId,
+    asunto
+  });
+
   // 📨 Generar HTML con plantilla
   const htmlBody = emailRemember(
     destinatario,
