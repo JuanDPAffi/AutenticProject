@@ -1,25 +1,24 @@
 // src/controllers/procesoController.js
 import Proceso from "../models/procesoModel.js";
 import getDatosEmailRemember from "../utils/getDatosEmailRemember.js";
-import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js"; // esta función la creamos abajo
+import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js";
 import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js";
 
 export const registrarProcesoDesdeCorreo = async (req, res) => {
   try {
-    const { bodyHtml } = req.body;
+    const { bodyHtml, asunto } = req.body;
 
-    if (!bodyHtml) {
-      return res.status(400).json({ error: "bodyHtml es requerido" });
+    if (!bodyHtml || !asunto) {
+      return res.status(400).json({ error: "❌ bodyHtml y asunto son requeridos" });
     }
 
-    const datos = getDatosEmailRemember(bodyHtml); // extrae processId, asunto, firmante, fecha, modificado
-    const { processId, asunto, firmante, fecha, modificado } = datos;
+    const datos = getDatosEmailRemember({ bodyHtml, asunto });
+    const { processId, firmante, fecha, modificado } = datos;
 
-    if (!processId || !asunto) {
-      return res.status(400).json({ error: "Faltan datos clave" });
+    if (!processId || !asunto || !firmante) {
+      return res.status(400).json({ error: "❌ Faltan datos clave" });
     }
 
-    // Buscar si ya existe
     const procesoExistente = await Proceso.findOne({ processId });
 
     if (!procesoExistente) {
@@ -28,7 +27,6 @@ export const registrarProcesoDesdeCorreo = async (req, res) => {
       await Proceso.updateOne({ processId }, { $set: { asunto, firmante, modificado } });
     }
 
-    // 📧 Enviar recordatorio al firmante pendiente
     const pendiente = determinarFirmantePendiente(asunto, firmante);
     if (pendiente) {
       await enviarCorreoRecordatorio(pendiente, processId);
