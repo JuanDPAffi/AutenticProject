@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import emailRemember from "../templates/templateEmailGerentes.js";
-import { Gerente } from "../models/gerente.js"; // asegúrate que tu modelo esté correctamente exportado
+import { Gerente } from "../models/gerenteModel.js"; // asegúrate que tu modelo esté correctamente exportado
 import dotenv from "dotenv";
 
 dotenv.config(); // Carga las variables de entorno desde .env

@@ -1,5 +1,5 @@
 // services/firmaService.js
-import { Gerente } from "../models/gerente.js";
+import { Gerente } from "../models/gerenteModel.js";
 import dotenv from "dotenv";
 dotenv.config(); // ✅ Esto carga las variables del archivo .env
 

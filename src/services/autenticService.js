@@ -35,6 +35,10 @@ async function obtenerToken() {
   }
 }
 
+const rutaJSON = "/tmp/datosTemp.json";
+const raw = readFileSync(rutaJSON, "utf-8");
+const input = JSON.parse(raw);
+
 // 📤 Enviar proceso de firma a Autentic
 export async function enviarParaFirma(base64Reglamento, base64Contrato, firmantes) {
   try {
@@ -59,8 +63,8 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
               fileName: "Contrato_Fianza.pdf"
             }
           ],
-          subject: "Firma del Contrato de Fianza",
-          message: "Por favor firme el contrato digitalmente.",
+          subject: `Firma contrato de fianza ${input.numero_de_contrato}`,
+          message: `Ha sido asignado como firmante del contrato de fianza número ${input.numero_de_contrato}, correspondiente a una solicitud generada por ${input.nombre_inmobiliaria || input.nombre_establecimiento_comercio}. Por favor revise los documentos adjuntos y proceda con la firma digital para continuar con el proceso de vinculación.`,
           order: true,
           // expirationDate: obtenerFechaExpiracion(7),
           sendEmail: true
