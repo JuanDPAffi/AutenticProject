@@ -201,7 +201,7 @@ const doc = new Document({
           new TextRun({ break: 1 }),
           new TextRun({ text: data.NOMBRE_INMOBILIARIA, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` sociedad legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} bajo el NIT No ${data.NIT_INMOBILIARIA} representada en este acto por ${data.NOMBRE_REPRESENTANTE_LEGAL} identificado con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL} de ${data.CIUDAD_EXPEDICION} en su calidad de Representante Legal existencia y representación que se acredita con certificación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
+            text: ` sociedad legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} bajo el NIT No ${data.NIT_INMOBILIARIA} representada en este acto por ${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL} identificado con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL} de ${data.CIUDAD_EXPEDICION} en su calidad de Representante Legal existencia y representación que se acredita con certificación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
             font: 'Arial MT',
             size: 22
           }),
@@ -1448,7 +1448,9 @@ const doc = new Document({
         children: [
           new TextRun({ text: "LILIAN PAOLA HOLGUÍN ORREGO", font: 'Arial MT', size: 22 }),
           new TextRun({ break: 1 }),
-          new TextRun({ text: "Gerente Comercial AFFI SAS", font: 'Arial MT', size: 22 })
+          new TextRun({ text: "Gerente Comercial AFFI SAS", font: 'Arial MT', size: 22 }),
+          new TextRun({ break: 1 }),
+          new TextRun({ text: "AFFI S.A.S.", font: 'Arial MT', size: 22 })
         ]
       }),
     ]

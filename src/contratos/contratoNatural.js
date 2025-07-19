@@ -1445,7 +1445,9 @@ const doc = new Document({
         children: [
           new TextRun({ text: "LILIAN PAOLA HOLGUÍN ORREGO", font: 'Arial MT', size: 22 }),
           new TextRun({ break: 1 }),
-          new TextRun({ text: "Gerente Comercial AFFI SAS", font: 'Arial MT', size: 22 })
+          new TextRun({ text: "Gerente Comercial AFFI SAS", font: 'Arial MT', size: 22 }),
+          new TextRun({ break: 1 }),
+          new TextRun({ text: "AFFI S.A.S.", font: 'Arial MT', size: 22 })
         ]
       }),
     ]

@@ -62,7 +62,7 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
           subject: "Firma del Contrato de Fianza",
           message: "Por favor firme el contrato digitalmente.",
           order: true,
-          expirationDate: obtenerFechaExpiracion(7),
+          // expirationDate: obtenerFechaExpiracion(7),
           sendEmail: true
         }
       ]
@@ -94,11 +94,11 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
 }
 
 // 🕓 Calcular fecha de expiración en formato YYYY-MM-DD
-function obtenerFechaExpiracion(dias) {
-  const fecha = new Date();
-  fecha.setDate(fecha.getDate() + dias);
-  return fecha.toISOString().split("T")[0];
-}
+// function obtenerFechaExpiracion(dias) {
+//   const fecha = new Date();
+//   fecha.setDate(fecha.getDate() + dias);
+//   return fecha.toISOString().split("T")[0];
+// }
 
 const BASE_URL = process.env.AUTENTIC_API_BASE
 
