@@ -1,6 +1,8 @@
 // autenticService.js
 import axios from "axios";
 import dotenv from "dotenv";
+import { readFileSync } from "fs";
+
 dotenv.config(); // ✅ Carga el archivo .env
 
 // 🔐 Configuración desde .env
@@ -35,13 +37,21 @@ async function obtenerToken() {
   }
 }
 
-const rutaJSON = "/tmp/datosTemp.json";
-const raw = readFileSync(rutaJSON, "utf-8");
-const input = JSON.parse(raw);
-
 // 📤 Enviar proceso de firma a Autentic
 export async function enviarParaFirma(base64Reglamento, base64Contrato, firmantes) {
   try {
+    // ⬇️ Leer datos temporales
+    const rutaJSON = "/tmp/datosTemp.json";
+    let input;
+
+    try {
+      const raw = readFileSync(rutaJSON, "utf-8");
+      input = JSON.parse(raw);
+    } catch (err) {
+      console.error("❌ No se pudo leer datosTemp.json:", err.message);
+      throw new Error("Archivo temporal de datos no encontrado");
+    }
+
     const token = await obtenerToken();
 
     const payload = {
