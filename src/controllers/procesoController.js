@@ -2,8 +2,6 @@
 
 import Proceso from "../models/procesoModel.js";
 import getDatosEmailRemember from "../utils/getDatosEmailRemember.js";
-import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js";
-import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js";
 
 export const registrarProcesoDesdeCorreo = async (req, res) => {
   try {
@@ -30,10 +28,23 @@ export const registrarProcesoDesdeCorreo = async (req, res) => {
 
     // El resto de tu lógica funciona con estos cambios
     if (!procesoExistente) {
-      // Usamos la variable 'asunto' que extrajimos del req.body
-      await Proceso.create({ processId, asunto: asunto.trim(), firmante, fecha, modificado });
+      await Proceso.create({
+        processId,
+        asunto: asunto.trim(),
+        firmante,
+        fecha,
+        modificado,
+        zona: "",
+        correoDirector: false
+      });
     } else {
-      await Proceso.updateOne({ processId }, { $set: { asunto: asunto.trim(), firmante, modificado } });
+      await Proceso.updateOne({ processId }, {
+        $set: {
+          asunto: asunto.trim(),
+          firmante,
+          modificado
+        }
+      });
     }
 
     // Creamos un objeto de respuesta que incluya el asunto

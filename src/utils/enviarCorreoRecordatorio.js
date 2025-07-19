@@ -1,3 +1,5 @@
+// src/utils/enviarCorreoRecordatorio.js
+
 import axios from "axios";
 import emailRemember from "../templates/templateEmailGerentes.js";
 import { Gerente } from "../models/gerente.js"; // asegúrate que tu modelo esté correctamente exportado
