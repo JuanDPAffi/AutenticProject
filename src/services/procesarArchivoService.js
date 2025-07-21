@@ -1,8 +1,9 @@
+// src/services/procesarArchivoService.js
+
 import axios from "axios";
 import FormData from "form-data";
 import { obtenerTokenHubSpot } from "./hubspotService.js";
 
-// IDs reales del objeto personalizado en tu portal HubSpot
 const custom_objet_id = "2-27967747";
 const type_id_vinculacion_notas = "63";
 
@@ -28,7 +29,7 @@ async function crearNotaService(id_file_uploaded) {
   const payload = {
     properties: {
       hs_timestamp: Date.now(),
-      hubspot_owner_id: "664132265", // 👈 Puedes parametrizar si lo deseas
+      hubspot_owner_id: "664132265",
       hs_attachment_ids: id_file_uploaded,
       hs_note_body: "Contrato de fianza firmado automáticamente desde Autentic"
     }
@@ -50,14 +51,21 @@ async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }) {
   const token = await obtenerTokenHubSpot();
   const formData = new FormData();
 
-  console.log("🔍 Objeto file recibido:", { name, buffer: buffer ? "Buffer presente" : "Buffer ausente" });
+  function normalizarTexto(texto) {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "_")
+      .toUpperCase();
+  }
 
-  // 👈 SOLUCIÓN TEMPORAL: Generar nombre si no existe
-  let nuevoNombre = name;
-  if (!nuevoNombre) {
-    const timestamp = Date.now();
-    nuevoNombre = `Contrato_${num_contrato}_${timestamp}.pdf`;
-    console.log("⚠️  Generando nombre por defecto:", nuevoNombre);
+  const nombreNormalizado = normalizarTexto(nombre_inm);
+  let nuevoNombre;
+
+  if (name && name.toUpperCase().includes("REGLAMENTO")) {
+    nuevoNombre = `REGLAMENTO_DE_FIANZA_COLECTIVA_AFFI_${num_contrato}_${nombreNormalizado}.pdf`;
+  } else {
+    nuevoNombre = `CONTRATO_DE_FIANZA_COLECTIVA_${num_contrato}_${nombreNormalizado}.pdf`;
   }
 
   console.log("📄 Nombre del archivo enviado a HubSpot:", nuevoNombre);
@@ -90,6 +98,7 @@ async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }) {
     return { success: false, error: error.response?.data || error.message };
   }
 }
+
 
 export async function procesarArchivoService(id_vinculacion, nombre_inm, num_contrato, fileBuffer) {
   const resultados = [];

@@ -44,15 +44,20 @@ const meses = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
 ];
 
+function formatearNumeroConPuntos(numero) {
+  const numStr = numero.toString();
+  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 // 🧾 Preparar datos del contrato
 const data = {
   NUMERO_CONTRATO: input.numero_de_contrato,
   NOMBRE_INMOBILIARIA: input.nombre_inmobiliaria,
   CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
-  NIT_INMOBILIARIA: input.nit_inmobiliaria,
+  NIT_INMOBILIARIA: formatearNumeroConPuntos(input.nit_inmobiliaria),
   NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
   APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
-  CEDULA_REPRESENTANTE_LEGAL: input.cedula_representante_legal,
+  CEDULA_REPRESENTANTE_LEGAL: formatearNumeroConPuntos(input.cedula_representante_legal),
   CIUDAD_EXPEDICION: input.ciudad_expedicion,
   DIA_NUMEROS: hoy.getDate().toString(),
   DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
@@ -1448,9 +1453,11 @@ const doc = new Document({
         children: [
           new TextRun({ text: "LILIAN PAOLA HOLGUÍN ORREGO", font: 'Arial MT', size: 22 }),
           new TextRun({ break: 1 }),
-          new TextRun({ text: "Gerente Comercial AFFI SAS", font: 'Arial MT', size: 22 }),
+          new TextRun({ text: "Gerente Comercial", font: 'Arial MT', size: 22 }),
           new TextRun({ break: 1 }),
-          new TextRun({ text: "AFFI S.A.S.", font: 'Arial MT', size: 22 })
+          new TextRun({ text: "AFFI S.A.S.", font: 'Arial MT', size: 22 }),
+          new TextRun({ break: 1 }),
+          new TextRun({ text: "NIT. 900.053.370", font: 'Arial MT', size: 22 })
         ]
       }),
     ]
