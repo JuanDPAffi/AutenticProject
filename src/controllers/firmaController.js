@@ -27,7 +27,13 @@ export async function ejecutarProcesoFirma(req, res) {
     }
 
     // 🧠 Verificar si debe incluir convenio
-    const incluirConvenio = (datos.convenio_firma_digital || "").toLowerCase().trim() === "sí";
+    const incluirConvenio = ["si", "sí"].includes(
+      (datos.convenio_firma_digital || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // quita tilde
+        .trim()
+    );
 
     // 1️⃣ Generar contrato PDF
     const base64Contrato = await generarContratoPDF(datos);
