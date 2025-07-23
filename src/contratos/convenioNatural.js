@@ -54,6 +54,7 @@ const data = {
   APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: formatearNumeroConPuntos(input.cedula_representante_legal),
   NOMBRE_ESTABLECIMIENTO_COMERCIO: input.nombre_establecimiento_comercio,
+  CORREO: input.correo,
   DIA_NUMEROS: hoy.getDate().toString(),
   DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
   MES: meses[hoy.getMonth()],
@@ -1815,5 +1816,5 @@ const doc = new Document({
 // 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
   writeFileSync("src/contratos/CONVENIO_FIRMA_DIGITAL.docx", buffer);
-  console.log("✅ Convenio juridico generado con éxito");
+  console.log("✅ Convenio natural generado con éxito");
 });
