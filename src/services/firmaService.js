@@ -20,13 +20,13 @@ export async function obtenerFirmantes(datos, incluirGerenteFinanciera = false) 
   // Traer gerentes necesarios
   const gerentes = await Gerente.find({
     type: incluirGerenteFinanciera
-      ? { $in: ["Comercial", "General", "Financiera"] }
+      ? { $in: ["Financiera", "Comercial", "General"] }
       : { $in: ["Comercial", "General"] }
   });
 
+  const financiera = gerentes.find(g => g.type === "Financiera");
   const comercial = gerentes.find(g => g.type === "Comercial");
   const general = gerentes.find(g => g.type === "General");
-  const financiera = gerentes.find(g => g.type === "Financiera");
 
   if (!comercial || !general) {
     throw new Error("No se encontraron ambos gerentes (Comercial y General) en MongoDB.");
@@ -60,32 +60,43 @@ export async function obtenerFirmantes(datos, incluirGerenteFinanciera = false) 
     throw new Error(`Tipo de persona inválido: ${datos.tipo_persona}`);
   }
 
-  const firmantes = [
-    cliente,
-    construirFirmante({
-      name: comercial.name,
-      lastName: comercial.last_name,
-      cc: comercial.cc,
-      email: comercial.email
-    }),
-    construirFirmante({
-      name: general.name,
-      lastName: general.last_name,
-      cc: general.cc,
-      email: general.email
-    })
-  ];
-
-  if (incluirGerenteFinanciera) {
-    firmantes.push(
+  const firmantes = incluirGerenteFinanciera
+  ? [
+      cliente,
       construirFirmante({
         name: financiera.name,
         lastName: financiera.last_name,
         cc: financiera.cc,
         email: financiera.email
+      }),
+      construirFirmante({
+        name: comercial.name,
+        lastName: comercial.last_name,
+        cc: comercial.cc,
+        email: comercial.email
+      }),
+      construirFirmante({
+        name: general.name,
+        lastName: general.last_name,
+        cc: general.cc,
+        email: general.email
       })
-    );
-  }
+    ]
+  : [
+      cliente,
+      construirFirmante({
+        name: comercial.name,
+        lastName: comercial.last_name,
+        cc: comercial.cc,
+        email: comercial.email
+      }),
+      construirFirmante({
+        name: general.name,
+        lastName: general.last_name,
+        cc: general.cc,
+        email: general.email
+      })
+    ];
 
   return firmantes;
 }

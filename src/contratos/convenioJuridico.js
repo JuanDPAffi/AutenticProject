@@ -23,6 +23,23 @@ const rutaJSON = path.resolve("tmp/datosTemp.json");
 const raw = readFileSync(rutaJSON, "utf-8");
 const input = JSON.parse(raw);
 
+function numeroALetrasDia(n) {
+  const dias = [
+    "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
+    "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete",
+    "dieciocho", "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés",
+    "veinticuatro", "veinticinco", "veintiséis", "veintisiete", "veintiocho",
+    "veintinueve", "treinta", "treinta y uno"
+  ];
+  return dias[n];
+}
+
+const hoy = new Date();
+const meses = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+];
+
 function formatearNumeroConPuntos(numero) {
   const numStr = numero.toString();
   return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -38,7 +55,11 @@ const data = {
   APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: formatearNumeroConPuntos(input.cedula_representante_legal),
   CIUDAD_EXPEDICION: input.ciudad_expedicion,
-  CORREO: input.correo
+  CORREO: input.correo,
+  DIA_NUMEROS: hoy.getDate().toString(),
+  DIA_LETRAS: numeroALetrasDia(hoy.getDate()),
+  MES: meses[hoy.getMonth()],
+  ANO: hoy.getFullYear().toString()
 };
 
 const numeroConvenio = input.numero_convenio_digital;
@@ -66,7 +87,6 @@ const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
 const UBICACION_GEOGRAFICA = esCapitalDepartamental
   ? `en la ciudad de ${ciudad.toUpperCase()}`
   : `en el municipio de ${ciudad.toUpperCase()}`;
-
 
 const doc = new Document({
   styles: {
@@ -123,6 +143,75 @@ const doc = new Document({
             level: 2,
             format: "decimal",
             text: "4.%1.%2.%3.",
+            alignment: AlignmentType.LEFT
+          },
+        ],
+      },
+      {
+        reference: "numeracion7",
+        levels: [
+          {
+            level: 0,
+            format: "decimal",
+            text: "7.%1.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 1,
+            format: "decimal",
+            text: "7.%1.%2.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 2,
+            format: "decimal",
+            text: "7.%1.%2.%3.",
+            alignment: AlignmentType.LEFT
+          },
+        ],
+      },
+      {
+        reference: "numeracion8",
+        levels: [
+          {
+            level: 0,
+            format: "decimal",
+            text: "8.%1.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 1,
+            format: "decimal",
+            text: "8.%1.%2.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 2,
+            format: "decimal",
+            text: "8.%1.%2.%3.",
+            alignment: AlignmentType.LEFT
+          },
+        ],
+      },
+      {
+        reference: "numeracion13",
+        levels: [
+          {
+            level: 0,
+            format: "decimal",
+            text: "13.%1.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 1,
+            format: "decimal",
+            text: "13.%1.%2.",
+            alignment: AlignmentType.LEFT
+          },
+          {
+            level: 2,
+            format: "decimal",
+            text: "13.%1.%2.%3.",
             alignment: AlignmentType.LEFT
           },
         ],
@@ -210,7 +299,7 @@ const doc = new Document({
         children: [
           new TextRun({ text: data.NOMBRE_INMOBILIARIA, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` Persona jurídica debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con el NIT No. ${data.NIT_INMOBILIARIA} representada legalmente por ${data.NOMBRE_REPRESENTANTE_LEGAL} persona mayor de edad, domiciliado y residente en ${data.CIUDAD_INMOBILIARIA}, identificado con la cédula de ciudadanía No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
+            text: ` Persona jurídica debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con el NIT No. ${data.NIT_INMOBILIARIA} representada legalmente por ${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL} persona mayor de edad, domiciliado y residente en ${data.CIUDAD_INMOBILIARIA}, identificado con la cédula de ciudadanía No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
             font: 'Arial MT',
             size: 22
           }),
@@ -1012,10 +1101,719 @@ const doc = new Document({
           new TextRun({ break: 1 }),
       ]}),
 
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'QUINTA. FACTURACIÓN:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` La factura por las firmas digitales y los servicios adicionales consumidos se enviará mensualmente a LA INMOBILIARIA con un detalle de los usos realizados. Las tarifas establecidas para la firma digital y para los servicios adicionales se incrementarán anualmente con el incremento del Índice de Precios al Consumidor certificado por el DANE.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
 
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'SEXTA. VIGENCIA DEL CONVENIO.', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` Doce (12) meses contados a partir de la firma del presente convenio. Este convenio se prorrogará automáticamente anualmente y las tarifas se incrementarán en una proporción igual al aumento del IPC del año inmediatamente anterior.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'SÉPTIMA. CLAUSULA RESOLUTORIA EXPRESA:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` Este convenio comercial dejará de tener efectos en los siguientes eventos:`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 7.1
+      new Paragraph({
+        numbering: { reference: "numeracion7", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'En el evento que el CONTRATO DE FIANZA COLECTIVA se termine por cualquiera de las causas señaladas en el contrato celebrado o en REGLAMENTO DE FIANZA dispuesto por AFFI S.A.S.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 7.2
+      new Paragraph({
+        numbering: { reference: "numeracion7", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Por incumplimiento en los acuerdos comerciales establecidos entre AFFI y ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: '.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 7.3
+      new Paragraph({
+        numbering: { reference: "numeracion7", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Por decisión unilateral de AFFI comunicada a ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ' con dos meses calendario de anticipación.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'OCTAVA. CAPACITACIÓN DE LA PLATAFORMA Y COMPROMISOS DE LA INMOBILIARIA:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` Se procederá a CAPACITAR EN EL USO DE LA PLATAFORMA a los funcionarios de `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: `. Será responsabilidad de LA INMOBILIARIA en forma exclusiva que sus funcionarios acudan a la capacitación y aprendan el correcto manejo de la plataforma. Es preciso señalar que existe en la PLATAFORMA varias formas de VERIFICACION DE LA IDENTIDAD. Para todos los efectos contractuales, en el ARTICULO SEGUNDO de este CONVENIO se ha señalado cuáles deben usar los funcionarios de la INMOBILIARIA frente a los CONTRATOS DE ARRENDAMIENTO que se afianzaran con AFFI S.A.S.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: `Adicionalmente, `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({ text: 'LA INMOBILIARIA', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` se compromete a:`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 8.1
+      new Paragraph({
+        numbering: { reference: "numeracion8", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Asignar tiempo de los usuarios que recibirán el entrenamiento necesario para la implementación exitosa.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 8.2
+      new Paragraph({
+        numbering: { reference: "numeracion8", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Poner a disposición de los usuarios los equipos y elementos necesarios para el correcto funcionamiento de la plataforma.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 8.3
+      new Paragraph({
+        numbering: { reference: "numeracion8", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Manejar y hacer buen   uso de   la   cuenta    de    usuario    suministrada por AFFI S.A.S. ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ' no permitirá su utilización por parte de terceras personas.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 8.4
+      new Paragraph({
+        numbering: { reference: "numeracion8", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Utilizar la plataforma conforme a las estipulaciones previstas en el presente acuerdo y los demás términos y condiciones, y políticas establecidas por parte de AUTENTIC SIGN que le serán entregadas a ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ' por parte de AFFI S.A.S.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 8.5
+      new Paragraph({
+        numbering: { reference: "numeracion8", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Responder por todos los perjuicios que pueda causar a AUTENTIC SIGN o a terceros derivados del uso inadecuado de la cuenta de usuario y mantendrá indemne a AUTENTIC SIGN frente a cualquier reclamación que se presente con ocasión de dichos actos.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'NOVENA. EMISION DE CERTIFICADO DE FIRMA DIGITAL:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` En el evento en que `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` requiera la emisión de un certificado de firma digital, independientemente de su duración, dicho certificado será emitido por la entidad de  certificación digital abierta debidamente autorizada en Colombia para la emisión de este tipo de certificados y acreditada por parte del Organismo Nacional de Acreditación de Colombia - ONAC con la cual AUTENTIC SIGN tenga convenio al costo que cause la entidad de certificación digital.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'DÉCIMA. RESPONSABILIDAD DE AFFI S.A.S:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` AFFI S.A.S. permitirá el uso de la PLATAFORMA que ha adquirido de AUTENTIC SIGN y ese es su UNICO COMPROMISO Y OBLIGACION en este CONVENIO. Por lo tanto y si la PLATAFORMA tiene deficiencias o errores, esta será responsabilidad de AUTENTIC SIGN y cualquier reclamo sobre el particular deberá hacerse a dicha entidad por intermedio de AFFI S.A.S.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'DÉCIMA PRIMERA SOPORTE TECNICO:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` El servicio de soporte técnico se prestará durante  la vigencia del convenio por parte de AUTENTIC SIGN. El soporte técnico será prestado única y exclusivamente en asuntos relacionados con la funcionalidad de AUTENTIC SIGN. El soporte no cubre la solución de asuntos relacionados con fallas en los equipos, fallas de conexión a internet, y en general, asuntos no relacionados con la programación de AUTENTIC SIGN. `,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({ text: 'DÉCIMA SEGUNDA. TITULARIDAD / PROPIEDAD INTELECTUAL:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
+          new TextRun({
+            text: ` LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` no adquirirá la propiedad sobre AUTENTIC SIGN, ni cualquier otro software de propiedad de AUTENTIC SIGN y no podrá utilizarlo para fines distintos a los previstos en el presente convenio. LA INMOBILIARIA reconoce que AUTENTIC SIGN es el único titular de derechos de autor sobre AUTENTIC SIGN. Así mismo, AFFI S.A.S. reconoce que la titularidad de los derechos de autor sobre la información y los contenidos generados y/o registrados por `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` (a través de sus Usuarios) dentro de AUTENTIC SIGN pertenece de forma exclusiva a `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: `.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: `Queda claro para `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` que AFFI S.A.S. le está permitiendo el uso de la PLATAFORMA AUTENTIC SIGN, pero que AUTENTIC SIGN ostenta y conservará todos los derechos de propiedad intelectual, industrial o cualesquiera otros; AUTENTIC SIGN no podrá ser objeto de modificación, copia, alteración, reproducción, adaptación o traducción por parte de `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` (incluidos los Usuarios). La estructura, características, códigos, métodos de trabajo, sistemas de información, herramientas de desarrollo, know-how, metodologías, procesos, tecnologías o algoritmos de AUTENTIC SIGN son propiedad protegida, incluidos aquellos que se desarrollen en la etapa de implementación (programación), y están regulados por las normas colombianas e internacionales de propiedad intelectual e industrial.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: `En consecuencia, queda terminantemente prohibido cualquier uso por `,
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: `LA INMOBILIARIA`,
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ` de AUTENTIC SIGN que se realice sin la autorización expresa y por escrito de AFFI S.A.S. Y/O AUTENTIC SIGN, incluida su explotación, reproducción, difusión, transformación, distribución, transmisión por cualquier medio, posterior publicación, exhibición, comunicación pública o representación total o parcial, las cuales, de producirse, constituirán infracciones de los derechos de propiedad intelectual o industrial de AUTENTIC SIGN, sancionadas por la legislación vigente.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: `DÉCIMA TERCERA. EXONERACIÓN DE RESPONSABILIDAD:`,
+            font: 'Arial MT',
+            size: 22,
+            underline: true,
+            bold: true
+          }),
+          new TextRun({
+            text: ` AFFI S.A.S. e igualmente, AUTENTIC SIGN no serán en ningún caso responsables por:`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.1
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'El uso indebido de la cuenta de usuario por parte de ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: ' o de terceros, ni responderá por sanciones y gastos derivados de reclamaciones de las personas afectadas, por negligencia y/o falta de confidencialidad, uso y/o tratamientos indebidos de los datos de carácter personal, incluyendo expresamente cualesquiera importes derivados de las sanciones que, eventualmente, pudiera imponerle la autoridad competente en materia de protección de datos por el incumplimiento o cumplimiento defectuoso de la normativa aplicable en la materia.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.2
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'La suspensión de AUTENTIC SIGN originada en fallas técnicas u operativas ajenas a su voluntad, ni de aquellas que escapen de su control tales como cortes de energía eléctrica, fallas en los equipos de ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ', fallas en la conexión a internet, o en general por eventos de fuerza mayor o caso fortuito.',
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.3
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Los errores de funcionamiento o de los daños provocados por el incumplimiento de las obligaciones de ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ' que le sean de aplicación de conformidad con lo previsto en los presentes términos.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.4
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Cualquier daño o perjuicio que pueda ser ocasionado a ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ' como consecuencia de un ataque cibernético al repositorio de información administrado por AUTENTIC SIGN o a la plataforma AUTENTIC SIGN, cuando dicho ataque haya sido generado (i) por un incumplimiento a las obligaciones de ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: ', (ii) un uso indebido de la cuenta de usuario; (iii) cuando el ataque se genere sobre información contenida en bases de datos que se encuentran en repositorios administrados por LA INMOBILIARIA, toda vez que AUTENTIC SIGN no puede garantizar condiciones de seguridad sobre estos repositorios o; iv) por eventos de fuerza mayor o caso fortuito.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.5
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Cualquier daño o perjuicio que pueda ser calificado como lucro cesante, pérdida de negocios, daño a la imagen o pérdida de reputación comercial de ',
+            font: 'Arial MT',
+            size: 22
+          }),
+          new TextRun({
+            text: 'LA INMOBILIARIA',
+            font: 'Arial MT',
+            size: 22,
+            bold: true
+          }),
+          new TextRun({
+            text: '.',
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({}),
+
+      // 13.6
+      new Paragraph({
+        numbering: { reference: "numeracion13", level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: 'Retrasos, fallos de entrega u otros daños provocados por problemas inherentes al uso de Internet, pues el correcto funcionamiento de AUTENTIC SIGN puede estar sujeto a limitaciones, retrasos y otros problemas inherentes a Internet y las comunicaciones electrónicas.',
+            font: 'Arial MT',
+            size: 22
+          })
+        ]
+      }),
+
+      new Paragraph({}),
+
+      new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [
+          new TextRun({
+            text: `En señal de conformidad se suscribe el presente documento en la ciudad de Cali el día ${data.DIA_LETRAS} (${data.DIA_NUMEROS}) ${data.MES} de ${data.ANO}.`,
+            font: 'Arial MT',
+            size: 22
+          }),
+        ]
+      }),
+
+      new Paragraph({
+        children: [
+          new TextRun({ break: 2 }),
+        ]
+      }),
+
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: "NONE", size: 0, color: "FFFFFF" },
+          bottom: { style: "NONE", size: 0, color: "FFFFFF" },
+          left: { style: "NONE", size: 0, color: "FFFFFF" },
+          right: { style: "NONE", size: 0, color: "FFFFFF" },
+          insideHorizontal: { style: "NONE", size: 0, color: "FFFFFF" },
+          insideVertical: { style: "NONE", size: 0, color: "FFFFFF" }
+        },
+        rows: [
+          // 🔹 Fila 1: César + Representante Inmobiliaria
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
+                children: [
+                  new Paragraph({ children: [ new TextRun({ text: "CESAR AUGUSTO TEZNA CASTAÑO", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "C.C. 94.492.994", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "Representante legal", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "AFFI S.A.S.", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "NIT. 900.053.370", font: "Arial MT", size: 22 }) ] })
+                ]
+              }),
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
+                children: [
+                  new Paragraph({ children: [ new TextRun({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: `C.C. No ${data.CEDULA_REPRESENTANTE_LEGAL}`, font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "Representante legal", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: data.NOMBRE_INMOBILIARIA, font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: `NIT. ${data.NIT_INMOBILIARIA}`, font: "Arial MT", size: 22 }) ] })
+                ]
+              })
+            ]
+          }),
+
+          new TableRow({
+            children: [
+              new TableCell({
+                columnSpan: 2, // une las dos columnas
+                borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ break: 2 }),
+                    ],
+                  })
+                ],
+                verticalAlign: VerticalAlign.CENTER,
+                height: { value: 400, rule: HeightRule.EXACT } // altura fija
+              })
+            ]
+          }),
+
+          // 🔹 Fila 2: Lilian + Angelica
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
+                children: [
+                  new Paragraph({ children: [ new TextRun({ text: "LILIAN PAOLA HOLGUÍN ORREGO", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "C.C. 43.180.765", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "Gerente Comercial", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "AFFI S.A.S.", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "NIT. 900.053.370", font: "Arial MT", size: 22 }) ] })
+                ]
+              }),
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
+                children: [
+                  new Paragraph({ children: [ new TextRun({ text: "ANGELICA OSSA", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "C.C. 43.381.234", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "Gerente Financiera", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "AFFI S.A.S.", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "NIT. 900.053.370", font: "Arial MT", size: 22 }) ] })
+                ]
+              })
+            ]
+          })
+        ]
+      })
     ]
   }]
 });
+
 
 // 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {

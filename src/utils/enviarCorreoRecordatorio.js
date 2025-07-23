@@ -65,29 +65,19 @@ async function enviarCorreo(destinatarioEmail, htmlContent) {
 }
 
 // 📩 Función principal exportada
-export default async function enviarCorreoRecordatorio(destinatario, processId, numContrato, nombreCliente, asunto) {
-  // 🔍 Buscar gerente por nombre completo (name + " " + last_name)
-  console.log("🔍 Buscando gerente con nombre exacto:", destinatario);
-  const gerente = await Gerente.findOne({
-    $expr: {
-      $eq: [
-        { $concat: ["$name", " ", "$last_name"] },
-        destinatario
-      ]
-    }
-  });
-  console.log("📨 Correo encontrado:", gerente?.email);
+export default async function enviarCorreoRecordatorio(tipoGerente, processId, numContrato, nombreCliente, asunto) {
+  console.log("🔍 Buscando gerente por tipo:", tipoGerente);
 
+  const gerente = await Gerente.findOne({ type: tipoGerente });
   if (!gerente || !gerente.email) {
-    throw new Error(`❌ No se encontró correo para ${destinatario}`);
+    throw new Error(`❌ No se encontró gerente con tipo "${tipoGerente}"`);
   }
 
   const fechaEnvio = new Date().toLocaleDateString("es-CO");
 
-  // 🔎 LOG para verificar los valores
   console.log("📦 Datos enviados a la plantilla:");
   console.log({
-    destinatario,
+    destinatario: `${gerente.name} ${gerente.last_name}`,
     numContrato,
     nombreCliente,
     fechaEnvio,
@@ -95,9 +85,8 @@ export default async function enviarCorreoRecordatorio(destinatario, processId, 
     asunto
   });
 
-  // 📨 Generar HTML con plantilla
   const htmlBody = emailRemember(
-    destinatario,
+    `${gerente.name} ${gerente.last_name}`,
     numContrato,
     nombreCliente,
     fechaEnvio,
@@ -105,7 +94,6 @@ export default async function enviarCorreoRecordatorio(destinatario, processId, 
     asunto
   );
 
-  // 🚀 Enviar
   await enviarCorreo(gerente.email, htmlBody);
-  console.log(`📧 Recordatorio enviado a ${destinatario} (${gerente.email})`);
+  console.log(`📧 Recordatorio enviado a ${gerente.name} ${gerente.last_name} (${gerente.email})`);
 }

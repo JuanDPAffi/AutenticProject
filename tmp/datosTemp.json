@@ -1,13 +1,13 @@
 {
-  "tipo_persona": "Jurídica",
-  "numero_de_contrato": "CON9028937001",
-  "nombre_inmobiliaria": "Inmobiliaria Ejemplo S.A.S.",
-  "ciudad_inmobiliaria": "Bogotá D.C.",
-  "nit_inmobiliaria": 900123456,
-  "nombre_representante_legal": "Carlos",
-  "apellido_representante_legal": "Restrepo",
-  "cedula_representante_legal": 1234567890,
-  "ciudad_expedicion": "Bogotá D.C.",
+  "tipo_persona": "Natural",
+  "numero_de_contrato": "CON9028937002",
+  "nombre_representante_legal": "Juan Diego",
+  "apellido_representante_legal": "Pinilla Montoya",
+  "cedula_representante_legal": 1029384756,
+  "ciudad_inmobiliaria": "Medellín",
+  "ciudad_expedicion": "Medellín",
+  "nombre_establecimiento_comercio": "Comercializadora El Poblado",
   "correo": "pinillamontoyajuandiego@gmail.com",
-  "convenio_firma_digital": "Sí"
+  "convenio_firma_digital": "Sí",
+  "numero_convenio_digital": "FD-5235"
 }
