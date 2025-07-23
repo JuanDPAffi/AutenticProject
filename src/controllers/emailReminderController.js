@@ -2,12 +2,12 @@
 
 import Proceso from "../models/procesoModel.js";
 import Director from "../models/directorModel.js";
+import { Gerente } from "../models/gerenteModel.js";
 import enviarCorreoDirector from "../utils/enviarCorreoDirector.js";
 import emailDirectorTemplate from "../templates/templateEmailDirectores.js";
 
 import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js";
 import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js";
-import emailGerentesTemplate from "../templates/templateEmailGerentes.js";
 
 export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
   try {
@@ -23,9 +23,45 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     }
 
     const { firmante, asunto, correoDirector } = proceso;
+    
+    // 🔄 Determinar si hay convenio basado en el POST request
+    const convenioTexto = (req.body.convenio_firma_digital || "").toLowerCase().trim();
+    const tieneConvenio = ["sí", "si", "Sí", "Si"].includes(req.body.convenio_firma_digital?.trim()) || convenioTexto === "si" || convenioTexto === "sí";
+    
+    // 💾 Guardar el campo convenio como booleano
+    proceso.convenio = tieneConvenio;
+    await proceso.save();
+    
+    console.log(`✅ Campo convenio actualizado a: ${tieneConvenio} (basado en: "${req.body.convenio_firma_digital}")`);
+
+    // 🔍 Buscar si el firmante actual es un gerente para obtener su cédula
+    let cedulaFirmante = null;
+    
+    if (firmante) {
+      // Buscar gerente por nombre completo
+      const gerente = await Gerente.findOne({
+        $or: [
+          { $expr: { $eq: [{ $concat: ["$name", " ", "$last_name"] }, firmante.trim()] } },
+          { $expr: { $eq: [{ $concat: ["$last_name", " ", "$name"] }, firmante.trim()] } }
+        ]
+      });
+      
+      if (gerente) {
+        cedulaFirmante = gerente.cc?.toString();
+        console.log(`🔍 Gerente encontrado: ${gerente.name} ${gerente.last_name} - CC: ${cedulaFirmante}`);
+      } else {
+        console.log(`ℹ️ Firmante "${firmante}" no es un gerente registrado (probablemente cliente)`);
+      }
+    }
 
     // 📌 1️⃣ Enviar recordatorio a gerencias si falta alguien por firmar
-    const firmantePendiente = determinarFirmantePendiente(asunto, firmante);
+    const firmantePendiente = determinarFirmantePendiente(
+      asunto, 
+      cedulaFirmante, 
+      proceso.convenio // Ahora usamos el campo booleano
+    );
+
+    console.log(`🔍 Debug - Firmante: ${firmante}, Cédula: ${cedulaFirmante}, Convenio: ${proceso.convenio}, Pendiente: ${firmantePendiente}`);
 
     if (firmantePendiente) {
       await enviarCorreoRecordatorio(
@@ -39,9 +75,9 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     }
 
     // 📌 2️⃣ Enviar correo al director si firmó Lilian o César y aún no se ha notificado
-    const firmantesValidos = ["Lilian Paola Holguín Orrego", "Cesar Augusto Tezna Castaño"];
+    const ccValidos = ["1112956229", "94492994"]; // Lilian, Cesar
 
-    if (firmantesValidos.includes(firmante) && correoDirector === false) {
+    if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
       // 🔄 Normalizar la zona
       let zonaNormalizada = ["Antioquia", "Centro"].includes(zona) ? zona : "Regiones";
 

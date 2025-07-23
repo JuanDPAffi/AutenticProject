@@ -8,8 +8,9 @@ const procesoSchema = new mongoose.Schema({
   fecha: { type: String, required: true },
   firmante: { type: String, required: true },
   modificado: { type: String, required: true },
-  zona: { type: String, default: "" }, // ✅ nuevo campo
-  correoDirector: { type: Boolean, default: false } // ✅ nuevo campo
+  zona: { type: String, default: "" },
+  correoDirector: { type: Boolean, default: false },
+  convenio: { type: Boolean, default: false }
 });
 
 export default mongoose.model("Proceso", procesoSchema, "procesos");

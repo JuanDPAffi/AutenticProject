@@ -38,9 +38,8 @@ async function obtenerToken() {
 }
 
 // 📤 Enviar proceso de firma a Autentic
-export async function enviarParaFirma(base64Reglamento, base64Contrato, firmantes) {
+export async function enviarParaFirma(base64Reglamento, base64Contrato, base64Convenio, firmantes) {
   try {
-    // ⬇️ Leer datos temporales
     const rutaJSON = "/tmp/datosTemp.json";
     let input;
 
@@ -65,18 +64,21 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
           signers: firmantes,
           documents: [
             {
-              content: base64Reglamento,
+              content: base64Reglamento, // ✅ string
               fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf"
             },
             {
-              content: base64Contrato,
+              content: base64Contrato, // ✅ string
               fileName: "Contrato_Fianza.pdf"
+            },
+            {
+              content: base64Convenio, // ✅ string
+              fileName: "Convenio_Firma_Digital.pdf"
             }
           ],
           subject: `Firma contrato de fianza ${input.numero_de_contrato}`,
           message: `Ha sido asignado como firmante del contrato de fianza número ${input.numero_de_contrato}, correspondiente a una solicitud generada por ${input.nombre_inmobiliaria || input.nombre_establecimiento_comercio}. Por favor revise los documentos adjuntos y proceda con la firma digital para continuar con el proceso de vinculación.`,
           order: true,
-          // expirationDate: obtenerFechaExpiracion(7),
           sendEmail: true
         }
       ]
@@ -92,7 +94,6 @@ export async function enviarParaFirma(base64Reglamento, base64Contrato, firmante
     });
 
     console.log("📥 Respuesta de Autentic:", JSON.stringify(data, null, 2));
-
     console.log("✅ Proceso enviado a Autentic con éxito");
 
     const massiveProcessingId = data?.body?.massiveProcessingId;

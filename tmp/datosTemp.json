@@ -1,0 +1,13 @@
+{
+  "tipo_persona": "Natural",
+  "numero_de_contrato": "CON9028937002",
+  "nombre_representante_legal": "Juan Diego",
+  "apellido_representante_legal": "Pinilla Montoya",
+  "cedula_representante_legal": 1029384756,
+  "ciudad_inmobiliaria": "Medellín",
+  "ciudad_expedicion": "Medellín",
+  "nombre_establecimiento_comercio": "Comercializadora El Poblado",
+  "correo": "pinillamontoyajuandiego@gmail.com",
+  "convenio_firma_digital": "Sí",
+  "numero_convenio_digital": "FD-5235"
+}

@@ -87,8 +87,8 @@ const ciudad = input.ciudad_inmobiliaria;
 const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
 
 const UBICACION_GEOGRAFICA = esCapitalDepartamental
-  ? `en la ciudad de ${ciudad}`
-  : `en el municipio de ${ciudad}`;
+  ? `en la ciudad de ${ciudad.toUpperCase()}`
+  : `en el municipio de ${ciudad.toUpperCase()}`;
 
 const doc = new Document({
   styles: {
@@ -1467,5 +1467,5 @@ const doc = new Document({
 // 💾 Guardar el archivo
 Packer.toBuffer(doc).then(buffer => {
   writeFileSync("src/contratos/Contrato_Fianza.docx", buffer);
-  console.log("✅ Contrato natural generado con éxito");
+  console.log("✅ Contrato juridico generado con éxito");
 });
