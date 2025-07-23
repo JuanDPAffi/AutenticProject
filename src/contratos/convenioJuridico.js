@@ -18,8 +18,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { generarNumeroConvenio } from "../services/convenioService.js";
 
-// const rutaJSON = "/tmp/datosTemp.json"; produccion
-const rutaJSON = path.resolve("tmp/datosTemp.json");
+const rutaJSON = "/tmp/datosTemp.json"; produccion
+// const rutaJSON = path.resolve("tmp/datosTemp.json");
 const raw = readFileSync(rutaJSON, "utf-8");
 const input = JSON.parse(raw);
 
