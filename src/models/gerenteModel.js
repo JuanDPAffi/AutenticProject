@@ -1,3 +1,5 @@
+// src/models/gerenteModel.js
+
 import mongoose from "mongoose";
 
 const gerenteSchema = new mongoose.Schema({
@@ -5,9 +7,9 @@ const gerenteSchema = new mongoose.Schema({
   last_name: String,
   cc: Number,
   email: String,
-  type: { type: String, enum: ["Comercial", "General"] }
+  type: { type: String, enum: ["Comercial", "General", "Financiera"] }
 }, {
-  collection: "gerencias"  // <- 🔧 aquí le dices a Mongoose usar esa colección
+  collection: "gerencias"
 });
 
 export const Gerente = mongoose.model("Gerente", gerenteSchema);

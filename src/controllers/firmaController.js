@@ -1,5 +1,5 @@
 // controllers/firmaController.js
-import { generarContratoPDF } from "../services/contratoService.js";
+import { generarContratoPDF, generarConvenioPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";
 import path from "path";
@@ -11,36 +11,82 @@ export async function ejecutarProcesoFirma(req, res) {
     console.log("📥 Datos recibidos del webhook:", datos);
 
     // Validación mínima de campos obligatorios
-    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo ) {
+    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo) {
       return res.status(400).json({ error: "Faltan datos obligatorios", datos });
     }
 
     // 🔧 Validar y transformar número de celular
-    if (datos.numero_celular && typeof datos.numero_celular === 'string' && datos.numero_celular.startsWith('+57')) {
+    if (
+      datos.numero_celular &&
+      typeof datos.numero_celular === "string" &&
+      datos.numero_celular.startsWith("+57")
+    ) {
       const celularOriginal = datos.numero_celular;
-      datos.numero_celular = datos.numero_celular.substring(3); // Eliminar los primeros 3 caracteres (+57)
+      datos.numero_celular = datos.numero_celular.substring(3);
       console.log(`📞 Celular transformado: ${celularOriginal} -> ${datos.numero_celular}`);
     }
 
-    // 1. Generar contrato DOCX, convertir a PDF y base64
+    // 🧠 Verificar si debe incluir convenio
+    const incluirConvenio = (datos.convenio_firma_digital || "").toLowerCase().trim() === "sí";
+
+    // 1️⃣ Generar contrato PDF
     const base64Contrato = await generarContratoPDF(datos);
 
-    // 2. Leer reglamento desde /src/contratos/ y convertir a base64
+    // 2️⃣ Leer reglamento
     const reglamentoPath = path.resolve("src/contratos/REGLAMENTO_DE_FIANZA_AFFI.pdf");
     if (!fs.existsSync(reglamentoPath)) {
       throw new Error(`No se encontró el archivo del reglamento en: ${reglamentoPath}`);
     }
-
     const reglamentoBuffer = fs.readFileSync(reglamentoPath);
     const base64Reglamento = reglamentoBuffer.toString("base64");
 
-    // 3. Obtener firmantes dinámicamente
-    const firmantes = await obtenerFirmantes(datos);
+    // 3️⃣ Generar convenio (opcional)
+    let base64Convenio = null;
+    if (incluirConvenio) {
+      console.log("📄 Generando convenio digital...");
+      base64Convenio = await generarConvenioPDF(datos); // esta función debe retornar el PDF codificado en base64
+    }
 
-    // 4. Enviar a Autentic
-    const { massiveProcessingId, raw: resultado } = await enviarParaFirma(base64Reglamento, base64Contrato, firmantes);
+    // 4️⃣ Obtener firmantes
+    const firmantes = await obtenerFirmantes(datos, incluirConvenio);
 
-    // Validar que venga el massiveProcessingId
+    // 5️⃣ Armar lista de archivos
+    const archivos = [
+      {
+        nombre: `Contrato_${datos.numero_de_contrato}.pdf`,
+        base64: base64Contrato,
+      },
+      {
+        nombre: "REGLAMENTO_DE_FIANZA_AFFI.pdf",
+        base64: base64Reglamento,
+      },
+    ];
+
+    if (base64Convenio) {
+      archivos.push({
+        nombre: `Convenio_${datos.numero_de_contrato}.pdf`,
+        base64: base64Convenio,
+      });
+    }
+
+    // 6️⃣ Extraer los documentos por separado
+    const base64ReglamentoFinal = archivos.find(a => a.nombre === "REGLAMENTO_DE_FIANZA_AFFI.pdf")?.base64;
+    const base64ContratoFinal = archivos.find(a => a.nombre?.startsWith("Contrato_"))?.base64;
+    const base64ConvenioFinal = archivos.find(a => a.nombre?.startsWith("Convenio_"))?.base64;
+
+    // 🧪 Validar que existan
+    if (!base64ReglamentoFinal || !base64ContratoFinal || (incluirConvenio && !base64ConvenioFinal)) {
+      throw new Error("Faltan uno o más documentos base64 para enviar a Autentic.");
+    }
+
+    // 6️⃣ Enviar a Autentic (con los documentos como strings separados)
+    const { massiveProcessingId, raw: resultado } = await enviarParaFirma(
+      base64ReglamentoFinal,
+      base64ContratoFinal,
+      base64ConvenioFinal || "", // si no hay convenio, mandamos string vacío
+      firmantes
+    );
+
     if (!massiveProcessingId) {
       throw new Error("massiveProcessingId no retornado por Autentic");
     }
@@ -50,14 +96,14 @@ export async function ejecutarProcesoFirma(req, res) {
     return res.status(200).json({
       massiveProcessingId,
       message: "✅ Proceso de firma iniciado correctamente",
-      resultado
+      resultado,
     });
 
   } catch (error) {
     console.error("❌ Error en ejecutarProcesoFirma:", error.message || error);
     return res.status(500).json({
       error: "Error interno al iniciar el proceso de firma",
-      detalle: error.message || error
+      detalle: error.message || error,
     });
   }
 }

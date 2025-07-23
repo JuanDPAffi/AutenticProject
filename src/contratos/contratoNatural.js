@@ -86,8 +86,8 @@ const ciudad = input.ciudad_inmobiliaria;
 const esCapitalDepartamental = capitalesDepartamentales.includes(ciudad);
 
 const UBICACION_GEOGRAFICA = esCapitalDepartamental
-  ? `en la ciudad de ${ciudad}`
-  : `en el municipio de ${ciudad}`;
+  ? `en la ciudad de ${ciudad.toUpperCase()}`
+  : `en el municipio de ${ciudad.toUpperCase()}`;
 
 const doc = new Document({
   styles: {
