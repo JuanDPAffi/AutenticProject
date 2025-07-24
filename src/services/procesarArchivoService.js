@@ -63,9 +63,9 @@ async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }) {
   let nuevoNombre;
 
   if (name && name.toUpperCase().includes("REGLAMENTO")) {
-    nuevoNombre = `REGLAMENTO_DE_FIANZA_COLECTIVA_AFFI.pdf`;
+    nuevoNombre = `REGLAMENTO_DE_FIANZA_AFFI.pdf`;
   } else if (name && name.toUpperCase().includes("CONVENIO")) {
-    nuevoNombre = `CONVENIO_FIRMA_DIGITAL.pdf`;
+    nuevoNombre = `CONVENIO_COMERCIAL.pdf`;
   } else {
     nuevoNombre = `CONTRATO_DE_FIANZA_COLECTIVA_${num_contrato}_${nombreNormalizado}.pdf`;
   }

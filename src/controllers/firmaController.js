@@ -70,7 +70,7 @@ export async function ejecutarProcesoFirma(req, res) {
         },
         {
           content: base64Contrato,
-          fileName: `CONTRATO_${datos.numero_de_contrato}.pdf`
+          fileName: `CONTRATO_DE_FIANZA_COLECTIVA_${datos.numero_de_contrato}.pdf`
         }
       ],
       firmantes,
