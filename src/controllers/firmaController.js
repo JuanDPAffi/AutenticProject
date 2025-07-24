@@ -10,106 +10,110 @@ export async function ejecutarProcesoFirma(req, res) {
     const datos = req.body;
     console.log("📥 Datos recibidos del webhook:", datos);
 
-    // Validación mínima de campos obligatorios
-    if (!datos.tipo_persona || !datos.numero_de_contrato || !datos.correo) {
-      return res.status(400).json({ error: "Faltan datos obligatorios", datos });
+    // ✅ Validación robusta de campos obligatorios
+    const camposRequeridos = ['tipo_persona', 'numero_de_contrato', 'correo'];
+    const camposFaltantes = camposRequeridos.filter(campo => !datos[campo]);
+    
+    if (camposFaltantes.length > 0) {
+      return res.status(400).json({ 
+        error: "Faltan datos obligatorios", 
+        camposFaltantes,
+        datosRecibidos: Object.keys(datos)
+      });
     }
 
-    // 🔧 Validar y transformar número de celular
-    if (
-      datos.numero_celular &&
-      typeof datos.numero_celular === "string" &&
-      datos.numero_celular.startsWith("+57")
-    ) {
+    // 🔧 Transformar número de celular
+    if (datos.numero_celular?.startsWith?.("+57")) {
       const celularOriginal = datos.numero_celular;
       datos.numero_celular = datos.numero_celular.substring(3);
       console.log(`📞 Celular transformado: ${celularOriginal} -> ${datos.numero_celular}`);
     }
 
-    // 🧠 Verificar si debe incluir convenio
+    // 🧠 Determinar si incluir convenio
     const incluirConvenio = ["si", "sí"].includes(
       (datos.convenio_firma_digital || "")
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // quita tilde
+        .replace(/[\u0300-\u036f]/g, "")
         .trim()
     );
 
-    // 1️⃣ Generar contrato PDF
-    const base64Contrato = await generarContratoPDF(datos);
+    console.log(`📋 Convenio digital: ${incluirConvenio ? "SÍ" : "NO"}`);
 
-    // 2️⃣ Leer reglamento
-    const reglamentoPath = path.resolve("src/contratos/REGLAMENTO_DE_FIANZA_AFFI.pdf");
-    if (!fs.existsSync(reglamentoPath)) {
-      throw new Error(`No se encontró el archivo del reglamento en: ${reglamentoPath}`);
-    }
-    const reglamentoBuffer = fs.readFileSync(reglamentoPath);
-    const base64Reglamento = reglamentoBuffer.toString("base64");
-
-    // 3️⃣ Generar convenio (opcional)
-    let base64Convenio = null;
-    if (incluirConvenio) {
-      console.log("📄 Generando convenio digital...");
-      base64Convenio = await generarConvenioPDF(datos); // esta función debe retornar el PDF codificado en base64
-    }
+    // 🔄 Generar todos los documentos necesarios
+    const [base64Contrato, base64Reglamento, base64Convenio] = await Promise.all([
+      // 1️⃣ Generar contrato
+      generarContratoPDF(datos),
+      
+      // 2️⃣ Leer reglamento
+      (async () => {
+        const reglamentoPath = path.resolve("src/contratos/REGLAMENTO_DE_FIANZA_AFFI.pdf");
+        if (!fs.existsSync(reglamentoPath)) {
+          throw new Error(`Archivo de reglamento no encontrado: ${reglamentoPath}`);
+        }
+        return fs.readFileSync(reglamentoPath).toString("base64");
+      })(),
+      
+      // 3️⃣ Generar convenio (si es necesario)
+      incluirConvenio ? generarConvenioPDF(datos) : Promise.resolve(null)
+    ]);
 
     // 4️⃣ Obtener firmantes
     const firmantes = await obtenerFirmantes(datos, incluirConvenio);
 
-    // 5️⃣ Armar lista de archivos
-    const archivos = [
-      {
-        nombre: `Contrato_${datos.numero_de_contrato}.pdf`,
-        base64: base64Contrato,
-      },
-      {
-        nombre: "REGLAMENTO_DE_FIANZA_AFFI.pdf",
-        base64: base64Reglamento,
-      },
-    ];
+    // 5️⃣ Preparar datos para el servicio
+    const datosEnvio = {
+      documentos: [
+        {
+          content: base64Reglamento,
+          fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf"
+        },
+        {
+          content: base64Contrato,
+          fileName: `Contrato_${datos.numero_de_contrato}.pdf`
+        }
+      ],
+      firmantes,
+      numeroContrato: datos.numero_de_contrato,
+      nombreSolicitante: datos.nombre_inmobiliaria || datos.nombre_establecimiento_comercio || "Solicitante"
+    };
 
+    // Agregar convenio si existe
     if (base64Convenio) {
-      archivos.push({
-        nombre: `Convenio_${datos.numero_de_contrato}.pdf`,
-        base64: base64Convenio,
+      datosEnvio.documentos.push({
+        content: base64Convenio,
+        fileName: `Convenio_${datos.numero_de_contrato}.pdf`
       });
     }
 
-    // 6️⃣ Extraer los documentos por separado
-    const base64ReglamentoFinal = archivos.find(a => a.nombre === "REGLAMENTO_DE_FIANZA_AFFI.pdf")?.base64;
-    const base64ContratoFinal = archivos.find(a => a.nombre?.startsWith("Contrato_"))?.base64;
-    const base64ConvenioFinal = archivos.find(a => a.nombre?.startsWith("Convenio_"))?.base64;
+    console.log(`📄 Enviando ${datosEnvio.documentos.length} documentos a Autentic`);
 
-    // 🧪 Validar que existan
-    if (!base64ReglamentoFinal || !base64ContratoFinal || (incluirConvenio && !base64ConvenioFinal)) {
-      throw new Error("Faltan uno o más documentos base64 para enviar a Autentic.");
-    }
-
-    // 6️⃣ Enviar a Autentic (con los documentos como strings separados)
-    const { massiveProcessingId, raw: resultado } = await enviarParaFirma(
-      base64ReglamentoFinal,
-      base64ContratoFinal,
-      base64ConvenioFinal || "", // si no hay convenio, mandamos string vacío
-      firmantes
-    );
+    // 6️⃣ Enviar a Autentic
+    const { massiveProcessingId, raw: resultado } = await enviarParaFirma(datosEnvio);
 
     if (!massiveProcessingId) {
-      throw new Error("massiveProcessingId no retornado por Autentic");
+      throw new Error("Autentic no retornó massiveProcessingId válido");
     }
 
-    console.log("🔁 massiveProcessingId recibido:", massiveProcessingId);
+    console.log("✅ Proceso iniciado con ID:", massiveProcessingId);
 
     return res.status(200).json({
+      success: true,
       massiveProcessingId,
-      message: "✅ Proceso de firma iniciado correctamente",
-      resultado,
+      message: "Proceso de firma iniciado correctamente",
+      documentosEnviados: datosEnvio.documentos.length,
+      firmantes: firmantes.length,
+      resultado
     });
 
   } catch (error) {
-    console.error("❌ Error en ejecutarProcesoFirma:", error.message || error);
+    console.error("❌ Error en ejecutarProcesoFirma:", error);
+    
     return res.status(500).json({
+      success: false,
       error: "Error interno al iniciar el proceso de firma",
-      detalle: error.message || error,
+      detalle: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 }
