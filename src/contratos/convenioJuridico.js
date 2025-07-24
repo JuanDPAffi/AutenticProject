@@ -299,7 +299,7 @@ const doc = new Document({
         children: [
           new TextRun({ text: data.NOMBRE_INMOBILIARIA, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` Persona jurídica debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con el NIT No. ${data.NIT_INMOBILIARIA} representada legalmente por ${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL} persona mayor de edad, domiciliado y residente en ${data.CIUDAD_INMOBILIARIA}, identificado con la cédula de ciudadanía No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
+            text: ` persona jurídica debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con el NIT No. ${data.NIT_INMOBILIARIA} representada legalmente por ${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL} persona mayor de edad, domiciliado y residente en ${data.CIUDAD_INMOBILIARIA}, identificado con la cédula de ciudadanía No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
             font: 'Arial MT',
             size: 22
           }),

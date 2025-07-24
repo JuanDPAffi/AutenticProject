@@ -70,7 +70,7 @@ export async function ejecutarProcesoFirma(req, res) {
         },
         {
           content: base64Contrato,
-          fileName: `Contrato_${datos.numero_de_contrato}.pdf`
+          fileName: `CONTRATO_${datos.numero_de_contrato}.pdf`
         }
       ],
       firmantes,
@@ -82,7 +82,7 @@ export async function ejecutarProcesoFirma(req, res) {
     if (base64Convenio) {
       datosEnvio.documentos.push({
         content: base64Convenio,
-        fileName: `Convenio_${datos.numero_de_contrato}.pdf`
+        fileName: `CONVENIO_COMERCIAL.pdf`
       });
     }
 

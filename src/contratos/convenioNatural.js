@@ -298,7 +298,7 @@ const doc = new Document({
         children: [
           new TextRun({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` Persona natural debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con la C.C. No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
+            text: ` persona natural debidamente constituida y con domicilio ${UBICACION_GEOGRAFICA}, identificada con la C.C. No. ${data.CEDULA_REPRESENTANTE_LEGAL} y quien para todos los efectos legales del presente convenio suministra el correo electrónico ${data.CORREO} y que para los efectos de este convenio se llamará simplemente `,
             font: 'Arial MT',
             size: 22
           }),
