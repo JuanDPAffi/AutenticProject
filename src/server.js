@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Ruta de prueba para saber si el servidor arranca
 app.get("/api/test", (req, res) => {
-  res.json({ message: "Ruta funcionando" });
+  res.json({ message: "Ruta funcionando correctamente" });
 });
 
 // Cargar rutas
