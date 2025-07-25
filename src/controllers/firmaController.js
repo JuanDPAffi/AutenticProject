@@ -1,7 +1,7 @@
-// controllers/firmaController.js
 import { generarContratoPDF, generarConvenioPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";
+import { obtenerNumeroConvenioPorContrato } from "../services/convenioService.js";
 import path from "path";
 import fs from "fs";
 
@@ -39,6 +39,16 @@ export async function ejecutarProcesoFirma(req, res) {
     );
 
     console.log(`📋 Convenio digital: ${incluirConvenio ? "SÍ" : "NO"}`);
+
+    // 🔍 Obtener número de convenio si aplica
+    let numeroConvenio = null;
+    if (incluirConvenio) {
+      numeroConvenio = await obtenerNumeroConvenioPorContrato(datos.numero_de_contrato);
+      if (!numeroConvenio) {
+        throw new Error(`No se encontró número de convenio para el contrato ${datos.numero_de_contrato}`);
+      }
+      console.log(`🔢 Número de convenio encontrado: ${numeroConvenio}`);
+    }
 
     // 🔄 Generar todos los documentos necesarios
     const [base64Contrato, base64Reglamento, base64Convenio] = await Promise.all([
@@ -82,7 +92,7 @@ export async function ejecutarProcesoFirma(req, res) {
     if (base64Convenio) {
       datosEnvio.documentos.push({
         content: base64Convenio,
-        fileName: `CONVENIO_FIRMA_DIGITAL.pdf`
+        fileName: `CONVENIO_FIRMA_DIGITAL_${numeroConvenio}.pdf`
       });
     }
 
@@ -103,6 +113,7 @@ export async function ejecutarProcesoFirma(req, res) {
       message: "Proceso de firma iniciado correctamente",
       documentosEnviados: datosEnvio.documentos.length,
       firmantes: firmantes.length,
+      numeroConvenio: numeroConvenio || null,
       resultado
     });
 

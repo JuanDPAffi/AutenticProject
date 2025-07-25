@@ -3,6 +3,7 @@
 import axios from "axios";
 import FormData from "form-data";
 import { obtenerTokenHubSpot } from "./hubspotService.js";
+import { obtenerNumeroConvenioPorContrato } from "./convenioService.js";
 
 const custom_objet_id = "2-27967747";
 const type_id_vinculacion_notas = "63";
@@ -47,7 +48,7 @@ async function crearNotaService(id_file_uploaded) {
 }
 
 // 👉 Carga un archivo (buffer) a HubSpot y le da un nombre formateado
-async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }) {
+async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }, numeroConvenio = null) {
   const token = await obtenerTokenHubSpot();
   const formData = new FormData();
 
@@ -65,7 +66,7 @@ async function crearArchivoService(nombre_inm, num_contrato, { name, buffer }) {
   if (name && name.toUpperCase().includes("REGLAMENTO")) {
     nuevoNombre = `REGLAMENTO_DE_FIANZA_AFFI.pdf`;
   } else if (name && name.toUpperCase().includes("CONVENIO")) {
-    nuevoNombre = `CONVENIO_FIRMA_DIGITAL.pdf`;
+    nuevoNombre = `CONVENIO_FIRMA_DIGITAL_${numeroConvenio}.pdf`;
   } else {
     nuevoNombre = `CONTRATO_DE_FIANZA_COLECTIVA_${num_contrato}_${nombreNormalizado}.pdf`;
   }
@@ -106,9 +107,20 @@ export async function procesarArchivoService(id_vinculacion, nombre_inm, num_con
   const resultados = [];
   const errores = [];
 
+  // 🔍 Buscar número de convenio si hay archivo tipo CONVENIO
+  let numeroConvenio = null;
+  const hayConvenio = fileBuffer.some(file => file.name.toUpperCase().includes("CONVENIO"));
+  if (hayConvenio) {
+    numeroConvenio = await obtenerNumeroConvenioPorContrato(num_contrato);
+    if (!numeroConvenio) {
+      throw new Error(`No se encontró número de convenio para el contrato ${num_contrato}`);
+    }
+    console.log(`🔢 Número de convenio encontrado: ${numeroConvenio}`);
+  }
+
   for (const file of fileBuffer) {
     try {
-      const archivoResponse = await crearArchivoService(nombre_inm, num_contrato, file);
+      const archivoResponse = await crearArchivoService(nombre_inm, num_contrato, file, numeroConvenio);
       if (!archivoResponse.success) throw new Error(archivoResponse.error);
 
       const idArchivo = archivoResponse.data.id;
@@ -127,7 +139,7 @@ export async function procesarArchivoService(id_vinculacion, nombre_inm, num_con
       });
 
     } catch (error) {
-      errores.push({ archivo: file.nombre, error: error.message });
+      errores.push({ archivo: file.name, error: error.message });
     }
   }
 

@@ -27,3 +27,8 @@ export async function generarNumeroConvenio(numeroContrato) {
 
   return numeroConvenio;
 }
+
+export async function obtenerNumeroConvenioPorContrato(numeroContrato) {
+  const convenio = await Convenio.findOne({ numero_contrato: numeroContrato }).lean();
+  return convenio?.numero_convenio || null;
+}
