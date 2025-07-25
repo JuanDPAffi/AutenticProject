@@ -100,6 +100,7 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
           documents: documentos,
           subject: `Firma contrato de fianza ${numeroContrato}`,
           message: `Ha sido asignado como firmante del contrato de fianza número ${numeroContrato}, correspondiente a una solicitud generada por ${nombreSolicitante}. Por favor revise los documentos adjuntos y proceda con la firma digital para continuar con el proceso de vinculación.`,
+          expirationDate: obtenerFechaExpiracion(30),
           order: true,
           sendEmail: true
         }
@@ -142,11 +143,11 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
 }
 
 // 🕓 Calcular fecha de expiración en formato YYYY-MM-DD
-// function obtenerFechaExpiracion(dias) {
-//   const fecha = new Date();
-//   fecha.setDate(fecha.getDate() + dias);
-//   return fecha.toISOString().split("T")[0];
-// }
+function obtenerFechaExpiracion(dias) {
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() + dias);
+  return fecha.toISOString().split("T")[0];
+}
 
 // 📊 Consultar estado del proceso
 export async function consultarProcesoPorMassiveId(massiveProcessingId, token = null) {

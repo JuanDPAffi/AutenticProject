@@ -82,7 +82,7 @@ export async function ejecutarProcesoFirma(req, res) {
     if (base64Convenio) {
       datosEnvio.documentos.push({
         content: base64Convenio,
-        fileName: `CONVENIO_COMERCIAL.pdf`
+        fileName: `CONVENIO_FIRMA_DIGITAL.pdf`
       });
     }
 
