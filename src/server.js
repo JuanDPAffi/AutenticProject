@@ -11,6 +11,10 @@ import emailReminderRoutes from "./routes/emailReminder.routes.js";
 // Cargar variables de entorno desde .env
 dotenv.config();
 
+setInterval(() => {
+  console.log(">>> App sigue viva <<<", new Date().toISOString());
+}, 5000);
+
 // Crear instancia de Express
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +24,7 @@ app.use(express.json());
 
 // Ruta de prueba para saber si el servidor arranca
 app.get("/api/test", (req, res) => {
+  console.log("Entro Aquí");
   res.json({ message: "Ruta funcionando correctamente" });
 });
 
