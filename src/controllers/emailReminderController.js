@@ -50,7 +50,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         cedulaFirmante = gerente.cc?.toString();
         console.log(`🔍 Gerente encontrado: ${gerente.name} ${gerente.last_name} - CC: ${cedulaFirmante}`);
       } else {
-        console.log(`ℹ️ Firmante "${firmante}" no es un gerente registrado (probablemente cliente)`);
+        console.log(`Firmante "${firmante}" no es un gerente registrado (probablemente cliente)`);
       }
     }
 
@@ -74,11 +74,11 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       console.log(`📧 Recordatorio enviado a ${firmantePendiente}`);
     }
 
-    // 📌 2️⃣ Enviar correo al director si firmó Lilian o César y aún no se ha notificado
+    // Enviar correo al director si firmó Lilian o César y aún no se ha notificado
     const ccValidos = ["1112956229", "94492994"]; // Lilian, Cesar
 
     if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
-      // 🔄 Normalizar la zona
+      // Normalizar la zona
       let zonaNormalizada = ["Antioquia", "Centro"].includes(zona) ? zona : "Regiones";
 
       // Buscar director por zona normalizada
