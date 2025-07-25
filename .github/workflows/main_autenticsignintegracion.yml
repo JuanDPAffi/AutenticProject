@@ -31,7 +31,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:prueba
+          tags: ${{ env.IMAGE_NAME }}:latest
           no-cache: true
 
       - name: Deploy to Azure Web App
@@ -40,4 +40,4 @@ jobs:
           app-name: 'autenticSignIntegracion'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_53BC475639EF4315876F36316E3B373C }}
-          images: 'juanaffi/autenticproject:prueba'
+          images: 'juanaffi/autenticproject:latest'
