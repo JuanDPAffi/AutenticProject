@@ -17,7 +17,7 @@ setInterval(() => {
 
 // Crear instancia de Express
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || process.env.WEBSITES_PORT || 3000;
 
 // Middlewares
 app.use(express.json());
