@@ -13,10 +13,10 @@ export async function ejecutarProcesoFirma(req, res) {
     // ✅ Validación robusta de campos obligatorios
     const camposRequeridos = ['tipo_persona', 'numero_de_contrato', 'correo'];
     const camposFaltantes = camposRequeridos.filter(campo => !datos[campo]);
-    
+
     if (camposFaltantes.length > 0) {
-      return res.status(400).json({ 
-        error: "Faltan datos obligatorios", 
+      return res.status(400).json({
+        error: "Faltan datos obligatorios",
         camposFaltantes,
         datosRecibidos: Object.keys(datos)
       });
@@ -40,22 +40,9 @@ export async function ejecutarProcesoFirma(req, res) {
 
     console.log(`📋 Convenio digital: ${incluirConvenio ? "SÍ" : "NO"}`);
 
-    // 🔍 Obtener número de convenio si aplica
-    let numeroConvenio = null;
-    if (incluirConvenio) {
-      numeroConvenio = await obtenerNumeroConvenioPorContrato(datos.numero_de_contrato);
-      if (!numeroConvenio) {
-        throw new Error(`No se encontró número de convenio para el contrato ${datos.numero_de_contrato}`);
-      }
-      console.log(`🔢 Número de convenio encontrado: ${numeroConvenio}`);
-    }
-
-    // 🔄 Generar todos los documentos necesarios
+    // 🔄 Generar documentos (el convenio también lo guarda en la BD)
     const [base64Contrato, base64Reglamento, base64Convenio] = await Promise.all([
-      // 1️⃣ Generar contrato
       generarContratoPDF(datos),
-      
-      // 2️⃣ Leer reglamento
       (async () => {
         const reglamentoPath = path.resolve("src/contratos/REGLAMENTO_DE_FIANZA_AFFI.pdf");
         if (!fs.existsSync(reglamentoPath)) {
@@ -63,15 +50,23 @@ export async function ejecutarProcesoFirma(req, res) {
         }
         return fs.readFileSync(reglamentoPath).toString("base64");
       })(),
-      
-      // 3️⃣ Generar convenio (si es necesario)
       incluirConvenio ? generarConvenioPDF(datos) : Promise.resolve(null)
     ]);
 
-    // 4️⃣ Obtener firmantes
+    // 🔍 Solo ahora buscamos el número de convenio generado
+    let numeroConvenio = null;
+    if (incluirConvenio) {
+      numeroConvenio = await obtenerNumeroConvenioPorContrato(datos.numero_de_contrato);
+      if (!numeroConvenio) {
+        throw new Error(`No se encontró número de convenio después de generarlo para el contrato ${datos.numero_de_contrato}`);
+      }
+      console.log(`🔢 Número de convenio encontrado: ${numeroConvenio}`);
+    }
+
+    // 🧾 Obtener firmantes
     const firmantes = await obtenerFirmantes(datos, incluirConvenio);
 
-    // 5️⃣ Preparar datos para el servicio
+    // 📦 Preparar los documentos para envío
     const datosEnvio = {
       documentos: [
         {
@@ -88,7 +83,7 @@ export async function ejecutarProcesoFirma(req, res) {
       nombreSolicitante: datos.nombre_inmobiliaria || datos.nombre_establecimiento_comercio || "Solicitante"
     };
 
-    // Agregar convenio si existe
+    // ➕ Agregar convenio al envío (con número en el nombre)
     if (base64Convenio) {
       datosEnvio.documentos.push({
         content: base64Convenio,
@@ -98,7 +93,7 @@ export async function ejecutarProcesoFirma(req, res) {
 
     console.log(`📄 Enviando ${datosEnvio.documentos.length} documentos a Autentic`);
 
-    // 6️⃣ Enviar a Autentic
+    // 📤 Enviar a Autentic
     const { massiveProcessingId, raw: resultado } = await enviarParaFirma(datosEnvio);
 
     if (!massiveProcessingId) {
@@ -119,7 +114,7 @@ export async function ejecutarProcesoFirma(req, res) {
 
   } catch (error) {
     console.error("❌ Error en ejecutarProcesoFirma:", error);
-    
+
     return res.status(500).json({
       success: false,
       error: "Error interno al iniciar el proceso de firma",
