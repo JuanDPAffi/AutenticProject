@@ -23,7 +23,7 @@ process.on("unhandledRejection", (reason) => {
 async function bootstrap() {
   try {
     setInterval(() => {
-      console.log(">>> App sigue viva <<<", new Date().toISOString());
+      console.log(">>> !App sigue viva! <<<", new Date().toISOString());
     }, 5000);
  
     // Crear instancia de Express
