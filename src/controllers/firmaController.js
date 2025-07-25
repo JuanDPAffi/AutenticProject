@@ -29,7 +29,7 @@ export async function ejecutarProcesoFirma(req, res) {
       console.log(`📞 Celular transformado: ${celularOriginal} -> ${datos.numero_celular}`);
     }
 
-    // 🧠 Determinar si incluir convenio.
+    // 🧠 Determinar si incluir convenio
     const incluirConvenio = ["si", "sí"].includes(
       (datos.convenio_firma_digital || "")
         .toLowerCase()
