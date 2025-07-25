@@ -765,7 +765,7 @@ const doc = new Document({
           }),
           // Fila 1
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -791,7 +791,7 @@ const doc = new Document({
           }),
           // Fila 2
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -817,7 +817,7 @@ const doc = new Document({
           }),
           // Fila 3
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -843,7 +843,7 @@ const doc = new Document({
           }),
           // Fila 4
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1017,7 +1017,7 @@ const doc = new Document({
           }),
           // Fila 1
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1043,7 +1043,7 @@ const doc = new Document({
           }),
           // Fila 2
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1069,7 +1069,7 @@ const doc = new Document({
           }),
           // Fila 3
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
