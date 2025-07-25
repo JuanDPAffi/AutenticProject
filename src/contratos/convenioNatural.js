@@ -225,12 +225,12 @@ const doc = new Document({
           height: 15840,
         },
         margin: {
-        top: 1218,     // 2.15 cm
-        bottom: 278,   // 0.49 cm
-        left: 1300,    // 2.93 cm
-        right: 1202,   // 2.12 cm
-        header: 726,   // 1.28 cm
-        footer: 0      // 0 cm
+          top: 1985,     // 3.5 cm
+          bottom: 1134,  // 2.0 cm
+          left: 1300,    // 2.93 cm (sin cambios)
+          right: 1202,   // 2.12 cm (sin cambios)
+          header: 726,   // 1.28 cm
+          footer: 0      // 0 cm
         }
       }
     },
@@ -427,7 +427,6 @@ const doc = new Document({
       new Paragraph({}),
 
       new Paragraph({
-        pageBreakBefore: true,
         alignment: AlignmentType.JUSTIFIED,
         spacing: { before: 0, after: 0, line: 240 },
         children: [
@@ -711,6 +710,7 @@ const doc = new Document({
       }),
 
       new Paragraph({}),
+      new Paragraph({}),
 
       new Paragraph({
         alignment: AlignmentType.CENTER,
@@ -724,7 +724,7 @@ const doc = new Document({
         ],
       }),
       new Table({
-        width: { size: 80, type: WidthType.PERCENTAGE },
+        width: { size: 90, type: WidthType.PERCENTAGE },
         alignment: AlignmentType.CENTER,
         rows: [
           new TableRow({
@@ -732,7 +732,7 @@ const doc = new Document({
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
-                width: { size: 50, type: WidthType.PERCENTAGE },
+                width: { size: 60, type: WidthType.PERCENTAGE },
                 shading: {
                   fill: "D9D9D9",
                 },
@@ -764,7 +764,7 @@ const doc = new Document({
           }),
           // Fila 1
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 700, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -790,7 +790,7 @@ const doc = new Document({
           }),
           // Fila 2
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 700, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -816,7 +816,7 @@ const doc = new Document({
           }),
           // Fila 3
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 700, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -842,7 +842,7 @@ const doc = new Document({
           }),
           // Fila 4
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 700, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -869,6 +869,7 @@ const doc = new Document({
         ],
       }),
 
+      new Paragraph({}),
       new Paragraph({}),
 
       new Paragraph({
@@ -1016,7 +1017,7 @@ const doc = new Document({
           }),
           // Fila 1
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1042,7 +1043,7 @@ const doc = new Document({
           }),
           // Fila 2
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1050,7 +1051,8 @@ const doc = new Document({
                   new Paragraph({
                     alignment: AlignmentType.CENTER,
                     children: [
-                      new TextRun({ text: "Preguntas de autenticación (Centrales de Riesgo)", size: 22, font: "Arial MT" }),
+                      new TextRun({ text: "Preguntas de autenticación", size: 22, font: "Arial MT" }),
+                      new TextRun({ text: "(Centrales de Riesgo)", size: 22, font: "Arial MT", break: 1 }),
                     ],
                   }),
                 ],
@@ -1068,7 +1070,7 @@ const doc = new Document({
           }),
           // Fila 3
           new TableRow({
-            height: { value: 500, rule: HeightRule.EXACT },
+            height: { value: 1000, rule: HeightRule.EXACT },
             children: [
               new TableCell({
                 verticalAlign: VerticalAlign.CENTER,
@@ -1410,7 +1412,7 @@ const doc = new Document({
         children: [
           new TextRun({ text: 'DÉCIMA PRIMERA SOPORTE TECNICO:', bold: true, font: 'Arial MT', size: 22, color: '000000', underline: true }),
           new TextRun({
-            text: ` El servicio de soporte técnico se prestará durante  la vigencia del convenio por parte de AUTENTIC SIGN. El soporte técnico será prestado única y exclusivamente en asuntos relacionados con la funcionalidad de AUTENTIC SIGN. El soporte no cubre la solución de asuntos relacionados con fallas en los equipos, fallas de conexión a internet, y en general, asuntos no relacionados con la programación de AUTENTIC SIGN. `,
+            text: ` El servicio de soporte técnico se prestará durante la vigencia del convenio por parte de AUTENTIC SIGN. El soporte técnico será prestado única y exclusivamente en asuntos relacionados con la funcionalidad de AUTENTIC SIGN. El soporte no cubre la solución de asuntos relacionados con fallas en los equipos, fallas de conexión a internet, y en general, asuntos no relacionados con la programación de AUTENTIC SIGN. `,
             font: 'Arial MT',
             size: 22
           }),
@@ -1719,7 +1721,7 @@ const doc = new Document({
 
       new Paragraph({
         children: [
-          new TextRun({ break: 2 }),
+          new TextRun({ break: 4 }),
         ]
       }),
 
@@ -1769,7 +1771,7 @@ const doc = new Document({
                 children: [
                   new Paragraph({
                     children: [
-                      new TextRun({ break: 1 }),
+                      new TextRun({ break: 3 }),
                     ],
                   })
                 ],
