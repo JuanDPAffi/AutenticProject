@@ -1771,7 +1771,7 @@ const doc = new Document({
                 children: [
                   new Paragraph({
                     children: [
-                      new TextRun({ break: 2 }),
+                      new TextRun({ break: 1 }),
                     ],
                   })
                 ],

@@ -1438,7 +1438,7 @@ const doc = new Document({
                   new Paragraph({ text: `C.C. No ${data.CEDULA_REPRESENTANTE_LEGAL}`, font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: "Representante legal", font: 'Arial MT', size: 22 }),
                   new Paragraph({ text: data.NOMBRE_INMOBILIARIA, font: 'Arial MT', size: 22 }),
-                  new Paragraph({ text: data.NIT_INMOBILIARIA, font: 'Arial MT', size: 22 })
+                  new Paragraph({ text: `NIT. ${data.NIT_INMOBILIARIA}`, font: 'Arial MT', size: 22 })
                 ]
               })
             ]
