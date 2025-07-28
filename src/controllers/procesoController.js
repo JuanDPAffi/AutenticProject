@@ -52,7 +52,7 @@ export const registrarProcesoDesdeCorreo = async (req, res) => {
     res.status(200).json({ message: "✅ Proceso registrado correctamente", datos: datosRespuesta });
 
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    // console.error("❌ Error:", error.message);
     // Cambiamos a 400 si el error es por "Asunto no reconocido"
     if (error.message.includes("Asunto no reconocido")) {
         return res.status(400).json({ error: error.message });
