@@ -111,10 +111,26 @@ export async function ejecutarProcesoFirma(req, res) {
       numeroConvenio: numeroConvenio || null,
       resultado
     });
-
   } catch (error) {
     console.error("❌ Error en ejecutarProcesoFirma:", error);
 
+    // Detectar si ya existe convenio generado
+    if (error.message?.includes?.("Ya existe un convenio generado para este contrato:")) {
+      const numeroContrato = req.body?.numero_de_contrato || "Desconocido";
+      const match = error.message.match(/FD\d+/);
+      const numeroConvenio = match ? match[0] : "Desconocido";
+
+      return res.status(409).json({
+        success: false,
+        error: "El contrato ya tiene un convenio generado",
+        numeroContrato,
+        numeroConvenio,
+        detalle: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Otro tipo de error
     return res.status(500).json({
       success: false,
       error: "Error interno al iniciar el proceso de firma",
