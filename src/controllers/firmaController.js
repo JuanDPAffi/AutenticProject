@@ -1,3 +1,5 @@
+// src/controllers/firmaController.js
+
 import { generarContratoPDF, generarConvenioPDF } from "../services/contratoService.js";
 import { obtenerFirmantes } from "../services/firmaService.js";
 import { enviarParaFirma } from "../services/autenticService.js";

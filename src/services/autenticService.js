@@ -107,7 +107,9 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
       ]
     };
 
+    // 🔍 Payload exacto que sale al API
     console.log("📦 Enviando proceso a Autentic...");
+    console.log("🔍 Payload enviado a AutenTIC:\n" + JSON.stringify(payload, null, 2));
     
     const { data } = await axios.post(CONFIG.signingUrl, payload, {
       headers: {
