@@ -2,36 +2,37 @@ import Convenio from "../models/convenioModel.js";
 
 /**
  * Genera un número de convenio único basado en el contrato proporcionado.
- * Si ya existe uno para ese contrato, lanza un error.
+ * Si ya existe uno para ese contrato, **lo reusa** y lo retorna (NO lanza error).
  */
 export async function generarNumeroConvenio(numeroContrato, reintento = 0) {
+  if (!numeroContrato) throw new Error("numeroContrato es requerido");
   if (reintento >= 5) {
     throw new Error("❌ No se pudo generar un número de convenio único tras varios intentos");
   }
 
-  // 1. Verificar si ya existe un convenio para ese contrato
+  // 1) Reusar si ya existe para ese contrato
   const existente = await Convenio.findOne({ numero_contrato: numeroContrato }).lean();
-  if (existente) {
-    console.warn(`⚠️ Ya existe un convenio para el contrato ${numeroContrato}: ${existente.numero_convenio}`);
-    throw new Error(`Ya existe un convenio generado para este contrato: ${existente.numero_convenio}`);
+  if (existente?.numero_convenio) {
+    console.warn(`♻️ Reusando convenio existente para ${numeroContrato}: ${existente.numero_convenio}`);
+    return existente.numero_convenio;
   }
 
-  // 2. Buscar el último convenio creado
-  const ultimo = await Convenio.findOne()
-    .sort({ numero_convenio: -1 })
-    .lean();
+  // 2) Buscar el último convenio creado y calcular el siguiente
+  const ultimo = await Convenio.findOne().sort({ numero_convenio: -1 }).lean();
 
-  let nuevoNumero = 5247; // Valor base por defecto
-  if (ultimo) {
+  let nuevoNumero = 5247; // Valor base por defecto (se mantiene tu base)
+  if (ultimo?.numero_convenio?.startsWith?.("FD")) {
     const actual = parseInt(ultimo.numero_convenio.replace("FD", ""), 10);
-    nuevoNumero = actual + 1;
+    if (!Number.isNaN(actual)) {
+      nuevoNumero = Math.max(nuevoNumero, actual + 1);
+    }
   }
 
   const numeroConvenio = `FD${nuevoNumero}`;
 
-  // 3. Intentar guardar el nuevo convenio
+  // 3) Intentar guardar el nuevo convenio (manejo de colisiones por índice único)
   try {
-    const creado = await Convenio.create({
+    await Convenio.create({
       numero_contrato: numeroContrato,
       numero_convenio: numeroConvenio,
       fecha_generacion: new Date()
