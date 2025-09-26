@@ -50,6 +50,7 @@ function formatearNumeroConPuntos(numero) {
 const data = {
   NUMERO_CONTRATO: input.numero_de_contrato,
   CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
+  DEPARTAMENTO_INMOBILIARIA: input.departamento_inmobiliaria,
   NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
   APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: formatearNumeroConPuntos(input.cedula_representante_legal),

@@ -55,6 +55,7 @@ function formatearNumeroConPuntos(numero) {
 const data = {
   NUMERO_CONTRATO: input.numero_de_contrato,
   CIUDAD_INMOBILIARIA: input.ciudad_inmobiliaria,
+  DEPARTAMENTO_INMOBILIARIA: input.departamento_inmobiliaria,
   NOMBRE_REPRESENTANTE_LEGAL: input.nombre_representante_legal,
   APELLIDO_REPRESENTANTE_LEGAL: input.apellido_representante_legal,
   CEDULA_REPRESENTANTE_LEGAL: formatearNumeroConPuntos(input.cedula_representante_legal),
@@ -206,7 +207,7 @@ const doc = new Document({
           new TextRun({ break: 1 }),
           new TextRun({ text: `${data.NOMBRE_REPRESENTANTE_LEGAL} ${data.APELLIDO_REPRESENTANTE_LEGAL}`, bold: true, font: 'Arial MT', size: 22 }),
           new TextRun({
-            text: ` persona natural con establecimiento de comercio legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL}, en su calidad de propietaria de establecimiento de comercio que se acredita con certiﬁcación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
+            text: ` persona natural con establecimiento de comercio legalmente constituida con domicilio ${UBICACION_GEOGRAFICA} con la CC No ${data.CEDULA_REPRESENTANTE_LEGAL}, en su calidad de propietaria de establecimiento de comercio que se acredita con certiﬁcación expedida por la Cámara de Comercio de ${data.CIUDAD_INMOBILIARIA}, ${data.DEPARTAMENTO_INMOBILIARIA}, la cual se adjunta y hace parte integral de este contrato y que para todos los efectos se denominará `,
             font: 'Arial MT',
             size: 22
           }),
