@@ -1791,7 +1791,7 @@ const doc = new Document({
                 borders: { top: { style: "NONE" }, bottom: { style: "NONE" }, left: { style: "NONE" }, right: { style: "NONE" } },
                 children: [
                   new Paragraph({ children: [ new TextRun({ text: "LILIAN PAOLA HOLGUÍN ORREGO", font: "Arial MT", size: 22 }) ] }),
-                  new Paragraph({ children: [ new TextRun({ text: "C.C. 1.112.956.229", font: "Arial MT", size: 22 }) ] }),
+                  new Paragraph({ children: [ new TextRun({ text: "C.C. 67.012.593", font: "Arial MT", size: 22 }) ] }),
                   new Paragraph({ children: [ new TextRun({ text: "Gerente Comercial", font: "Arial MT", size: 22 }) ] }),
                   new Paragraph({ children: [ new TextRun({ text: "AFFI S.A.S.", font: "Arial MT", size: 22 }) ] }),
                   new Paragraph({ children: [ new TextRun({ text: "NIT. 900.053.370", font: "Arial MT", size: 22 }) ] })

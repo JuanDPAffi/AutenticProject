@@ -8,7 +8,7 @@ export default function determinarFirmantePendiente(asunto, ccFirmante, convenio
 
   // 🔐 Cédulas oficiales
   const CC_FINANCIERA = "1115075655"; // Angelica
-  const CC_COMERCIAL = "1112956229"; // Lilian
+  const CC_COMERCIAL = "67012593"; // Lilian
   const CC_GENERAL = "94492994";     // Cesar
 
   if (tieneConvenio) {
