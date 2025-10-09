@@ -60,7 +60,7 @@ async function startServer() {
     await mongoose.connect(process.env.MONGO_URI, {
       dbName: process.env.MONGO_DB,
     });
-    console.log("✅ Conectado a MongoDB");
+    console.log(`✅ Conectado a MongoDB '${process.env.MONGO_DB}`);
   } catch (err) {
     console.error("⚠️ No se pudo conectar a MongoDB:", err.message);
   }

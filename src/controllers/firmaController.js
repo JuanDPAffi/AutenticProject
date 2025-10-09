@@ -9,7 +9,7 @@ import fs from "fs";
 
 export async function ejecutarProcesoFirma(req, res) {
   try {
-    const datos = req.body;
+    const datos = { ...(req.body || {}) };
     console.log("📥 Datos recibidos del webhook:", datos);
 
     // ✅ Validación robusta de campos obligatorios
@@ -22,6 +22,12 @@ export async function ejecutarProcesoFirma(req, res) {
         camposFaltantes,
         datosRecibidos: Object.keys(datos),
       });
+    }
+
+    // 🔧 Normalizar tipo_persona a los valores que esperan las plantillas ("natural" | "juridica"/"jurídica")
+    if (typeof datos.tipo_persona === "string") {
+      const t = datos.tipo_persona.toLowerCase();
+      datos.tipo_persona = t.startsWith("jurid") ? "juridica" : "natural";
     }
 
     // 🔧 Transformar número de celular
@@ -73,14 +79,8 @@ export async function ejecutarProcesoFirma(req, res) {
     // 📦 Preparar los documentos para envío
     const datosEnvio = {
       documentos: [
-        {
-          content: base64Reglamento,
-          fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf",
-        },
-        {
-          content: base64Contrato,
-          fileName: `CONTRATO_DE_FIANZA_COLECTIVA_${datos.numero_de_contrato}.pdf`,
-        },
+        { content: base64Reglamento, fileName: "REGLAMENTO_DE_FIANZA_AFFI.pdf" },
+        { content: base64Contrato, fileName: `CONTRATO_DE_FIANZA_COLECTIVA_${datos.numero_de_contrato}.pdf` },
       ],
       firmantes,
       numeroContrato: datos.numero_de_contrato,
@@ -119,7 +119,6 @@ export async function ejecutarProcesoFirma(req, res) {
   } catch (error) {
     console.error("❌ Error en ejecutarProcesoFirma:", error);
 
-    // Detectar si ya existe convenio generado
     if (error.message?.includes?.("Ya existe un convenio generado para este contrato:")) {
       const numeroContrato = req.body?.numero_de_contrato || "Desconocido";
       const match = error.message.match(/FD\d+/);
@@ -135,7 +134,6 @@ export async function ejecutarProcesoFirma(req, res) {
       });
     }
 
-    // Otro tipo de error
     return res.status(500).json({
       success: false,
       error: "Error interno al iniciar el proceso de firma",
@@ -158,7 +156,7 @@ export async function ejecutarSoloConvenio(req, res) {
         .json({ success: false, error: "Faltan datos obligatorios", faltantes });
     }
 
-    // 🔧 Normalizar tipo_persona a los valores que espera tu generador ("natural" | "juridica"/"jurídica")
+    // 🔧 Normalizar tipo_persona a lo que esperan las plantillas
     if (typeof datos.tipo_persona === "string") {
       const t = datos.tipo_persona.toLowerCase();
       datos.tipo_persona = t.startsWith("jurid") ? "juridica" : "natural";
@@ -169,21 +167,28 @@ export async function ejecutarSoloConvenio(req, res) {
       datos.numero_celular = datos.numero_celular.substring(3);
     }
 
-    // 🧾 1) Generar SOLO el convenio
-    //    - Si viene numero_convenio_digital en el JSON, se respeta y NO se inserta en BD.
-    //    - Si viene vacío, se genera y se inserta en BD.
+    // ⚙️ Si viene numero_convenio_digital, úsalo tal cual; si no, se generará dentro de generarConvenioPDF
+    const numeroConvenioEntrada = (datos.numero_convenio_digital || datos.numeroConvenio || "")
+      .toString()
+      .trim()
+      .toUpperCase();
+
+    // 🧾 1) Generar SOLO el convenio (respeta numero_convenio_digital si vino; si no, genera e inserta)
     const base64Convenio = await generarConvenioPDF(datos);
 
-    // 🔢 2) Consultar el número de convenio asociado al contrato (si el consecutivo venía, ya debería existir en BD según tu regla)
-    const numeroConvenio = await obtenerNumeroConvenioPorContrato(datos.numero_de_contrato);
+    // 🔢 2) Resolver el número final a usar para el nombre del PDF y el payload
+    let numeroConvenio = numeroConvenioEntrada;
     if (!numeroConvenio) {
-      throw new Error(
-        `No se encontró número de convenio después de generarlo para el contrato ${datos.numero_de_contrato}`
-      );
+      // Si no vino en el body, ahora sí consultamos BD (debió quedar insertado durante la generación)
+      numeroConvenio = await obtenerNumeroConvenioPorContrato(datos.numero_de_contrato);
+      if (!numeroConvenio) {
+        throw new Error(
+          `No se encontró número de convenio después de generarlo para el contrato ${datos.numero_de_contrato}`
+        );
+      }
     }
 
-    // 👥 3) Firmantes: Cliente, Lilian (Comercial), Angélica (Financiera), Cesar (General)
-    //    Tu firmaService usa el 2do parámetro para incluir Gerente Financiera.
+    // 👥 3) Firmantes: Cliente, Comercial (Lilian), Financiera (Angélica), General (César)
     const firmantes = await obtenerFirmantes(datos, true);
 
     // 📦 4) Enviar SOLO el convenio a AutenTic (modo SOLO_CONVENIO: asunto/cuerpo de convenio)
