@@ -1,3 +1,4 @@
+// src/services/contratoService.js
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
@@ -43,9 +44,17 @@ export async function generarConvenioPDF(datos) {
     fs.mkdirSync(carpetaContratos, { recursive: true });
   }
 
-  // 👉 Generar y añadir el número de convenio aquí
-  const numeroConvenio = await generarNumeroConvenio(datos.numero_de_contrato);
-  datos.numero_convenio_digital = numeroConvenio;
+  // ✅ Política:
+  // 1) Si YA viene numero_convenio_digital en el JSON, lo respetamos (NO generamos ni insertamos).
+  // 2) Si NO viene, generamos y guardamos en BD.
+  if (!datos.numero_convenio_digital) {
+    const numeroConvenio = await generarNumeroConvenio(datos.numero_de_contrato);
+    datos.numero_convenio_digital = numeroConvenio;
+  } else {
+    console.log(
+      `ℹ️ Usando numero_convenio_digital recibido: ${datos.numero_convenio_digital} (no se genera ni inserta en BD)`
+    );
+  }
 
   const rutaJSON = "/tmp/datosTemp.json";
   fs.writeFileSync(rutaJSON, JSON.stringify(datos, null, 2));
