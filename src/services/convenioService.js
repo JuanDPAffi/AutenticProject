@@ -2,7 +2,8 @@ import Convenio from "../models/convenioModel.js";
 
 /**
  * Genera un número de convenio único basado en el contrato proporcionado.
- * Si ya existe uno para ese contrato, **lo reusa** y lo retorna (NO lanza error).
+ * - Si ya existe uno para ese contrato, lo reusa y lo retorna (NO lanza error).
+ * - Si no existe, busca el último (orden lexicográfico por ahora), suma 1 y crea el nuevo.
  */
 export async function generarNumeroConvenio(numeroContrato, reintento = 0) {
   if (!numeroContrato) throw new Error("numeroContrato es requerido");
@@ -17,10 +18,10 @@ export async function generarNumeroConvenio(numeroContrato, reintento = 0) {
     return existente.numero_convenio;
   }
 
-  // 2) Buscar el último convenio creado y calcular el siguiente
+  // 2) Buscar el último convenio creado y calcular el siguiente (orden lexicográfico)
   const ultimo = await Convenio.findOne().sort({ numero_convenio: -1 }).lean();
 
-  let nuevoNumero = 5247; // Valor base por defecto (se mantiene tu base)
+  let nuevoNumero = 5247; // base por defecto (se mantiene tu base)
   if (ultimo?.numero_convenio?.startsWith?.("FD")) {
     const actual = parseInt(ultimo.numero_convenio.replace("FD", ""), 10);
     if (!Number.isNaN(actual)) {
@@ -55,6 +56,46 @@ export async function generarNumeroConvenio(numeroContrato, reintento = 0) {
  * Devuelve el número de convenio asociado a un contrato (si existe).
  */
 export async function obtenerNumeroConvenioPorContrato(numeroContrato) {
+  if (!numeroContrato) throw new Error("numeroContrato es requerido");
   const convenio = await Convenio.findOne({ numero_contrato: numeroContrato }).lean();
   return convenio?.numero_convenio || null;
+}
+
+/**
+ * Asegura que exista en BD el par { numero_contrato, numero_convenio }.
+ * Útil cuando el numero_convenio viene en el JSON y quieres persistirlo.
+ * - Si ya existe para el contrato, devuelve el numero_convenio (no hace nada).
+ * - Si no existe, crea el registro con el consecutivo recibido.
+ * - Si ese consecutivo ya está usado por OTRO contrato, lanza error.
+ */
+export async function asegurarConvenioEnBD(numeroContrato, numeroConvenio) {
+  if (!numeroContrato || !numeroConvenio) {
+    throw new Error("numeroContrato y numeroConvenio son requeridos");
+  }
+
+  const numeroLimpio = String(numeroConvenio).trim().toUpperCase();
+
+  // ¿Ya existe para el contrato?
+  const existenteContrato = await Convenio.findOne({ numero_contrato: numeroContrato }).lean();
+  if (existenteContrato?.numero_convenio) {
+    return existenteContrato.numero_convenio; // nada que hacer
+  }
+
+  // ¿Ese consecutivo ya lo usa otro contrato?
+  const existenteNumero = await Convenio.findOne({ numero_convenio: numeroLimpio }).lean();
+  if (existenteNumero && existenteNumero.numero_contrato !== numeroContrato) {
+    throw new Error(
+      `El consecutivo ${numeroLimpio} ya está asociado al contrato ${existenteNumero.numero_contrato}`
+    );
+  }
+
+  // Crear registro
+  await Convenio.create({
+    numero_contrato: numeroContrato,
+    numero_convenio: numeroLimpio,
+    fecha_generacion: new Date()
+  });
+
+  console.log(`✅ Convenio asegurado en BD para el contrato ${numeroContrato}: ${numeroLimpio}`);
+  return numeroLimpio;
 }
