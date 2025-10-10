@@ -1,3 +1,4 @@
+// src/services/hubspotService.js
 import axios from "axios";
 import dotenv from "dotenv";
 import FormData from "form-data";
@@ -13,6 +14,11 @@ const {
 // 1️⃣ Obtener access_token desde el refresh_token
 export async function obtenerTokenHubSpot() {
   try {
+    // Validación mínima para errores más claros
+    if (!END_POINT_GET_TOKEN_API_HUBSPOT || !CLIENT_ID_HUBSPOT || !CLIENT_SECRET_HUBSPOT || !REFRESH_TOKEN_HUBSPOT) {
+      throw new Error("Variables de entorno HubSpot incompletas (END_POINT_GET_TOKEN_API_HUBSPOT / CLIENT_ID_HUBSPOT / CLIENT_SECRET_HUBSPOT / REFRESH_TOKEN_HUBSPOT)");
+    }
+
     const params = new URLSearchParams();
     params.append("grant_type", "refresh_token");
     params.append("client_id", CLIENT_ID_HUBSPOT);
@@ -33,22 +39,35 @@ export async function obtenerTokenHubSpot() {
   }
 }
 
-// 2️⃣ Subir archivo como adjunto a HubSpot
-export async function subirArchivoAHubSpot(archivo, nombreArchivo, token) {
+/**
+ * 2️⃣ Subir archivo a HubSpot
+ * - Acepta folderPath para separar contratos vs convenios.
+ * - Convierte base64 string a Buffer si es necesario.
+ */
+export async function subirArchivoAHubSpot(archivo, nombreArchivo, token, folderPath = "Contratos Firmados/AFFI") {
   try {
     const form = new FormData();
 
-    form.append("file", archivo.buffer, { filename: nombreArchivo });
+    // Robustez: si el buffer viene como string (base64), re-convertir a Buffer
+    let fileBuffer = archivo?.buffer;
+    if (!fileBuffer) {
+      throw new Error("Archivo inválido: falta buffer");
+    }
+    if (typeof fileBuffer === "string") {
+      fileBuffer = Buffer.from(fileBuffer, "base64");
+    }
+
+    form.append("file", fileBuffer, { filename: nombreArchivo });
     form.append("fileName", nombreArchivo);
     form.append("access", "PRIVATE");
 
-    // ✅ Campo requerido: options con folderPath incluido
+    // ✅ HubSpot crea el folderPath si no existe
     form.append("options", JSON.stringify({
       access: "PRIVATE",
       overwrite: false,
       duplicateValidationStrategy: "NONE",
       duplicateValidationScope: "ENTIRE_PORTAL",
-      folderPath: "Contratos Firmados/AFFI" // Puedes personalizarlo
+      folderPath // ← configurable
     }));
 
     const { data } = await axios.post("https://api.hubapi.com/files/v3/files", form, {
@@ -58,7 +77,7 @@ export async function subirArchivoAHubSpot(archivo, nombreArchivo, token) {
       }
     });
 
-    console.log(`📎 Archivo subido correctamente: ${nombreArchivo}`);
+    console.log(`📎 Archivo subido correctamente: ${nombreArchivo} → ${folderPath}`);
     return data.id;
 
   } catch (error) {
@@ -67,7 +86,7 @@ export async function subirArchivoAHubSpot(archivo, nombreArchivo, token) {
   }
 }
 
-// 3️⃣ Crear una nota con el archivo adjunto
+// 3️⃣ Nota (contratos)
 export async function crearNota(fileId, nombreArchivo, token) {
   try {
     const nota = {
@@ -101,7 +120,41 @@ export async function crearNota(fileId, nombreArchivo, token) {
   }
 }
 
-// 4️⃣ Asociar nota a la vinculación personalizada
+// 3️⃣ bis: Nota (convenios) — texto diferenciado
+export async function crearNotaConvenio(fileId, nombreArchivo, token) {
+  try {
+    const nota = {
+      properties: {
+        hs_timestamp: Date.now(),
+        hs_note_body: `📄 Se cargó automáticamente el convenio firmado: ${nombreArchivo}`
+      },
+      associations: [
+        {
+          to: { id: fileId },
+          types: [
+            { associationCategory: "HUBSPOT_DEFINED", associationTypeId: 17 } // Nota → Archivo
+          ]
+        }
+      ]
+    };
+
+    const { data } = await axios.post("https://api.hubapi.com/crm/v3/objects/notes", nota, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    console.log("🗒️ Nota (convenio) creada con éxito");
+    return data.id;
+
+  } catch (error) {
+    console.error("❌ Error creando nota (convenio):", error.response?.data || error.message);
+    throw new Error("No se pudo crear la nota de convenio en HubSpot");
+  }
+}
+
+// 4️⃣ Asociar nota a la vinculación personalizada (se deja igual)
 export async function asociarNotaARegistro(idNota, idVinculacion, token) {
   try {
     const objectTypeId = "2-16654045"; // ID de objeto personalizado: Vinculación

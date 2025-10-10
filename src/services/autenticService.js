@@ -62,31 +62,30 @@ async function obtenerToken() {
   }
 }
 
-// 📤 Enviar proceso de firma a Autentic (versión optimizada)
-export async function enviarParaFirma({ documentos, firmantes, numeroContrato, nombreSolicitante }) {
+// 📤 Enviar proceso de firma a Autentic (versión mejorada con soporte a convenios)
+export async function enviarParaFirma({ documentos, firmantes, numeroContrato, nombreSolicitante }, opciones = {}) {
   try {
-    // ✅ Validaciones de entrada robustas
-    if (!documentos || !Array.isArray(documentos) || documentos.length === 0) {
-      throw new Error("Se requiere al menos un documento válido");
-    }
-    
-    if (!firmantes || !Array.isArray(firmantes) || firmantes.length === 0) {
-      throw new Error("Se requiere al menos un firmante válido");
-    }
+    const mode = opciones.mode || "DEFAULT";
+    const numeroConvenio = opciones.numeroConvenio || null;
 
-    if (!numeroContrato) {
-      throw new Error("Número de contrato es requerido");
-    }
-
-    // ✅ Validar que todos los documentos tengan content y fileName
-    const documentosInvalidos = documentos.filter(doc => !doc.content || !doc.fileName);
-    if (documentosInvalidos.length > 0) {
-      throw new Error("Todos los documentos deben tener 'content' y 'fileName'");
-    }
-
-    console.log(`📋 Preparando envío: ${documentos.length} documentos, ${firmantes.length} firmantes`);
+    // ✅ Validaciones base
+    if (!documentos?.length) throw new Error("Se requiere al menos un documento válido");
+    if (!firmantes?.length) throw new Error("Se requiere al menos un firmante válido");
+    if (!numeroContrato) throw new Error("Número de contrato es requerido");
 
     const token = await obtenerToken();
+
+    // 🧩 Mensajes dinámicos
+    let asunto = "";
+    let mensaje = "";
+
+    if (mode === "SOLO_CONVENIO") {
+      asunto = `Firma convenio de firma digital ${numeroConvenio} - AutenTIC Sign`;
+      mensaje = `Ha sido asignado como firmante del convenio de firma digital número ${numeroConvenio}, correspondiente a una solicitud generada por ${nombreSolicitante}. Por favor revise el documento adjunto y proceda con la firma digital para formalizar el convenio.`;
+    } else {
+      asunto = `Firma contrato de fianza ${numeroContrato} - AutenTIC Sign`;
+      mensaje = `Ha sido asignado como firmante del contrato de fianza número ${numeroContrato}, correspondiente a una solicitud generada por ${nombreSolicitante}. Por favor revise los documentos adjuntos y proceda con la firma digital para continuar con el proceso de vinculación.`;
+    }
 
     const payload = {
       sendCompletionNotification: true,
@@ -98,8 +97,8 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
           senderIdentification: CONFIG.senderIdentification,
           signers: firmantes,
           documents: documentos,
-          subject: `Firma contrato de fianza ${numeroContrato}`,
-          message: `Ha sido asignado como firmante del contrato de fianza número ${numeroContrato}, correspondiente a una solicitud generada por ${nombreSolicitante}. Por favor revise los documentos adjuntos y proceda con la firma digital para continuar con el proceso de vinculación.`,
+          subject: asunto,
+          message: mensaje,
           expirationDate: obtenerFechaExpiracion(30),
           order: true,
           sendEmail: true
@@ -107,42 +106,37 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
       ]
     };
 
-    // 🔍 Payload exacto que sale al API
-    console.log("📦 Enviando proceso a Autentic...");
+    console.log(`📦 Enviando proceso a Autentic (${mode})...`);
     console.log("🔍 Payload enviado a AutenTIC:\n" + JSON.stringify(payload, null, 2));
-    
+
     const { data } = await axios.post(CONFIG.signingUrl, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      timeout: 30000 // 30 segundos para el envío
+      timeout: 30000
     });
 
     const massiveProcessingId = data?.body?.massiveProcessingId;
-    
     if (!massiveProcessingId) {
-      console.error("❌ Respuesta de Autentic sin massiveProcessingId:", data);
       throw new Error("Autentic no retornó un massiveProcessingId válido");
     }
 
-    console.log("✅ Proceso enviado exitosamente. ID:", massiveProcessingId);
+    console.log(`✅ Proceso enviado exitosamente (${mode}). ID: ${massiveProcessingId}`);
 
     return {
       massiveProcessingId,
       raw: data
     };
-
   } catch (error) {
     console.error("❌ Error en enviarParaFirma:", error.response?.data || error.message);
-    
-    if (error.code === 'ECONNABORTED') {
+    if (error.code === "ECONNABORTED") {
       throw new Error("Timeout al conectar con Autentic - intente nuevamente");
     }
-    
     throw new Error(`Fallo al enviar proceso de firma: ${error.message}`);
   }
 }
+
 
 // 🕓 Calcular fecha de expiración en formato YYYY-MM-DD
 function obtenerFechaExpiracion(dias) {
