@@ -19,18 +19,29 @@ export async function consultarYActualizarEstadoProceso(req, res) {
 
     console.log(`🔍 [${new Date().toISOString()}] Consultando estado del proceso: ${massiveProcessingId}`);
 
-    // ✅ Obtener token una sola vez (se cachea automáticamente)
-    const token = await obtenerToken();
-    
-    // ✅ Consultar proceso con reintentos automáticos
-    const proceso = await consultarProcesoPorMassiveId(massiveProcessingId, token);
+    // ✅ Usar rate limiter para evitar sobrecarga
+    const resultado = await rateLimiter.add(async () => {
+      // Obtener token una sola vez (se cachea automáticamente)
+      const token = await obtenerToken();
+      
+      // Consultar proceso con reintentos automáticos
+      return await consultarProcesoPorMassiveId(massiveProcessingId, token);
+    });
 
-    const processData = proceso?.body?.processes?.[0];
+    const processData = resultado?.body?.processes?.[0];
     const processId = processData?.processId || null;
     const status = processData?.status || "UNKNOWN";
 
     const duration = Date.now() - startTime;
-    console.log(`✅ [${new Date().toISOString()}] Proceso consultado en ${duration}ms - Estado: ${status}`);
+    console.log(`✅ [${new Date().toISOString()}] Proceso consultado en ${duration}ms`);
+    console.log(`   📋 ProcessId: ${processId}`);
+    console.log(`   📊 Estado: ${status}`);
+
+    // ⚠️ Alerta si no viene processId
+    if (!processId) {
+      console.warn(`⚠️ ADVERTENCIA: No se encontró processId en la respuesta`);
+      console.warn(`   Estructura recibida:`, JSON.stringify(resultado?.body, null, 2));
+    }
 
     return res.status(200).json({
       ProcessId: processId,
