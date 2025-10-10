@@ -48,7 +48,7 @@ export async function subirArchivoAHubSpot(archivo, nombreArchivo, token) {
       overwrite: false,
       duplicateValidationStrategy: "NONE",
       duplicateValidationScope: "ENTIRE_PORTAL",
-      folderPath: "Contratos Firmados/AFFI" // Puedes personalizarlo
+      folderPath: "Convenios Firmados/AFFI" // Puedes personalizarlo
     }));
 
     const { data } = await axios.post("https://api.hubapi.com/files/v3/files", form, {
@@ -73,7 +73,7 @@ export async function crearNota(fileId, nombreArchivo, token) {
     const nota = {
       properties: {
         hs_timestamp: Date.now(),
-        hs_note_body: `📝 Se cargó automáticamente el contrato firmado: ${nombreArchivo}`
+        hs_note_body: `📝 Se cargó automáticamente el convenio firmado: ${nombreArchivo}`
       },
       associations: [
         {
@@ -101,13 +101,13 @@ export async function crearNota(fileId, nombreArchivo, token) {
   }
 }
 
-// 4️⃣ Asociar nota a la vinculación personalizada
-export async function asociarNotaARegistro(idNota, idVinculacion, token) {
+// 4️⃣ Asociar nota al convenio personalizada
+export async function asociarNotaARegistro(idNota, idConvenio, token) {
   try {
-    const objectTypeId = "2-16654045"; // ID de objeto personalizado: Vinculación
+    const objectTypeId = "2-24411421"; // ID de objeto personalizado: convenio
 
     await axios.put(
-      `https://api.hubapi.com/crm/v3/objects/notes/${idNota}/associations/${objectTypeId}/${idVinculacion}/note_to_${objectTypeId}`,
+      `https://api.hubapi.com/crm/v3/objects/notes/${idNota}/associations/${objectTypeId}/${idConvenio}/note_to_${objectTypeId}`,
       {},
       {
         headers: {
@@ -116,10 +116,10 @@ export async function asociarNotaARegistro(idNota, idVinculacion, token) {
       }
     );
 
-    console.log("🔗 Nota asociada a la vinculación correctamente");
+    console.log("🔗 Nota asociada al convenio correctamente");
 
   } catch (error) {
     console.error("❌ Error asociando nota al registro:", error.response?.data || error.message);
-    throw new Error("No se pudo asociar la nota al registro de vinculación");
+    throw new Error("No se pudo asociar la nota al registro de convenio");
   }
 }

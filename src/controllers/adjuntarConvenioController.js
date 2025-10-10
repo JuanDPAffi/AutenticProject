@@ -1,4 +1,5 @@
-// src/controllers/adjuntarConvenioController.js
+// src\controllers\adjuntarConvenioController.js
+
 import {
   obtenerToken as obtenerTokenAutentic,
   descargarArchivosFirmados
@@ -8,7 +9,7 @@ import { procesarArchivoConvenioService } from "../services/procesarArchivoConve
 
 export async function adjuntarConvenio(req, res) {
   try {
-    const { processId, nombre_inm, num_contrato, id_convenio } = req.body;
+    const { processId, nombre_inm, num_convenio, id_convenio } = req.body;
 
     if (!processId || !id_convenio) {
       return res.status(400).json({
@@ -17,29 +18,20 @@ export async function adjuntarConvenio(req, res) {
       });
     }
 
-    console.log("📥 Datos recibidos (adjuntarConvenio):", req.body);
+    console.log("📥 Datos recibidos:", req.body);
 
     const tokenAutentic = await obtenerTokenAutentic();
     const archivos = await descargarArchivosFirmados(processId, tokenAutentic);
 
-    if (!archivos?.length) {
-      return res.status(404).json({
-        error: "No se encontraron documentos firmados para este proceso",
-        processId
-      });
-    }
-
-    console.log(`📄 ${archivos.length} archivos descargados desde AutenTic`);
-
     const { resultados, errores } = await procesarArchivoConvenioService(
       id_convenio,
       nombre_inm,
-      num_contrato,
+      num_convenio,
       archivos
     );
 
     return res.status(200).json({
-      mensaje: "Convenio procesado correctamente",
+      mensaje: "Proceso completado",
       resultados,
       errores
     });
