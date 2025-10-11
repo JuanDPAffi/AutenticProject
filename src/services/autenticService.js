@@ -23,6 +23,13 @@ let tokenCache = {
   expiracion: null
 };
 
+// 🔄 Invalidar caché de token
+function invalidarTokenCache() {
+  console.log("🔄 Invalidando caché de token...");
+  tokenCache.token = null;
+  tokenCache.expiracion = null;
+}
+
 // ✅ Validar configuración al inicio
 function validarConfiguracion() {
   const camposRequeridos = ['audience', 'clientId', 'clientSecret', 'signingUrl', 'enterpriseId', 'senderEmail', 'senderIdentification'];
@@ -34,15 +41,22 @@ function validarConfiguracion() {
 }
 
 // 🔄 Función para reintentar con backoff exponencial
-async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, invalidateTokenOn401 = false) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
     } catch (error) {
       const isLastRetry = i === maxRetries - 1;
+      const is401Error = error.response?.status === 401;
       const isRateLimitError = error.response?.status === 429 || error.code === 'ECONNABORTED';
       
-      if (isLastRetry || (!isRateLimitError && error.response?.status !== 500)) {
+      // 🔑 Si es error 401 y tenemos la opción activada, invalidar caché
+      if (is401Error && invalidateTokenOn401) {
+        invalidarTokenCache();
+        console.log("🔄 Token inválido detectado, solicitando uno nuevo...");
+      }
+      
+      if (isLastRetry || (!isRateLimitError && !is401Error && error.response?.status !== 500)) {
         throw error;
       }
 
@@ -88,11 +102,11 @@ async function obtenerToken() {
       throw new Error("Token no recibido en la respuesta de Autentic");
     }
 
-    // 💾 Guardar en caché (tokens de Autentic duran ~1 hora, guardamos por 50 min)
+    // 💾 Guardar en caché (20 minutos por seguridad)
     tokenCache.token = response.data.access_token;
-    tokenCache.expiracion = ahora + (50 * 60 * 1000); // 50 minutos
+    tokenCache.expiracion = ahora + (20 * 60 * 1000); // 20 minutos
 
-    console.log("🔑 Token obtenido y cacheado exitosamente");
+    console.log("🔑 Token obtenido y cacheado exitosamente (válido por 20 min)");
     return tokenCache.token;
 
   } catch (error) {
@@ -120,7 +134,7 @@ export async function consultarProcesoPorMassiveId(massiveProcessingId, token = 
         },
         timeout: 20000
       });
-    }, 3, 2000); // 3 reintentos con delay inicial de 2 segundos
+    }, 3, 2000, true); // ✅ true = invalidar token en 401
 
     console.log("✅ Estado del proceso consultado exitosamente");
     return resultado.data;
@@ -281,4 +295,4 @@ export async function descargarArchivosFirmados(processId, token = null) {
   }
 }
 
-export { obtenerToken };
+export { obtenerToken, invalidarTokenCache };
