@@ -74,7 +74,7 @@ class TokenManager {
 
       const ahora = Date.now();
       this.token = response.data.access_token;
-      this.expiracion = ahora + (20 * 60 * 1000); // 20 minutos
+      this.expiracion = ahora + (5 * 60 * 1000); // 5 minutos
 
       console.log("🔑 Token obtenido y cacheado exitosamente (válido por 20 min)");
       return this.token;

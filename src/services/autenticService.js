@@ -75,8 +75,6 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
     if (!firmantes?.length) throw new Error("Se requiere al menos un firmante válido");
     if (!numeroContrato) throw new Error("Número de contrato es requerido");
 
-    const token = await obtenerToken();
-
     // 🧩 Mensajes dinámicos
     let asunto = "";
     let mensaje = "";
@@ -111,6 +109,9 @@ export async function enviarParaFirma({ documentos, firmantes, numeroContrato, n
     console.log(`📦 Enviando proceso a Autentic (${mode})...`);
 
     const resultado = await retryWithBackoff(async () => {
+      // ✅ CRÍTICO: Obtener token DENTRO del reintento (no fuera)
+      const token = await obtenerToken();
+      
       return await axios.post(CONFIG.signingUrl, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
