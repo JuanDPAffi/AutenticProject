@@ -24,10 +24,19 @@ export async function ejecutarProcesoFirma(req, res) {
       });
     }
 
-    // 🔧 Normalizar tipo_persona a los valores que esperan las plantillas ("natural" | "juridica"/"jurídica")
+    // 🔧 Normalizar tipo_persona a ("natural" | "juridica") tolerando MAYÚSCULAS, acentos y basura de encoding
     if (typeof datos.tipo_persona === "string") {
-      const t = datos.tipo_persona.toLowerCase();
-      datos.tipo_persona = t.startsWith("jurid") ? "juridica" : "natural";
+      const raw = String(datos.tipo_persona);
+
+      // 1) chequeo directo por si viene "JurÃ­dica" (sigue conteniendo "jur")
+      const hasJurRaw = /jur/i.test(raw);
+
+      // 2) chequeo normalizado (quita diacríticos) por si viene "Jurídica"
+      const norm = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const hasJurNorm = /jur/i.test(norm);
+
+      datos.tipo_persona = (hasJurRaw || hasJurNorm) ? "juridica" : "natural";
+      console.log("🔎 tipo_persona normalizado:", datos.tipo_persona, "| raw:", raw);
     }
 
     // 🔧 Transformar número de celular
@@ -156,10 +165,19 @@ export async function ejecutarSoloConvenio(req, res) {
         .json({ success: false, error: "Faltan datos obligatorios", faltantes });
     }
 
-    // 🔧 Normalizar tipo_persona a lo que esperan las plantillas
+    // 🔧 Normalizar tipo_persona a ("natural" | "juridica") tolerando MAYÚSCULAS, acentos y encoding
     if (typeof datos.tipo_persona === "string") {
-      const t = datos.tipo_persona.toLowerCase();
-      datos.tipo_persona = t.startsWith("jurid") ? "juridica" : "natural";
+      const raw = String(datos.tipo_persona);
+
+      // 1) chequeo directo por si viene "JurÃ­dica" (sigue conteniendo "jur")
+      const hasJurRaw = /jur/i.test(raw);
+
+      // 2) chequeo normalizado (quita diacríticos) por si viene "Jurídica"
+      const norm = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const hasJurNorm = /jur/i.test(norm);
+
+      datos.tipo_persona = (hasJurRaw || hasJurNorm) ? "juridica" : "natural";
+      console.log("🔎 tipo_persona normalizado:", datos.tipo_persona, "| raw:", raw);
     }
 
     // 📱 Normaliza celular (+57)
