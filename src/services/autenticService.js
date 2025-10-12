@@ -1,6 +1,8 @@
-// autenticService.js - OPTIMIZADO
+// src/services/autenticService.js
+
 import axios from "axios";
 import dotenv from "dotenv";
+import TokenManager from "./tokenManager.js";
 
 dotenv.config();
 
@@ -17,18 +19,8 @@ const CONFIG = {
   downloadEndpoint: process.env.END_POINT_API_GET_FILE
 };
 
-// 🔐 CACHÉ DE TOKEN (evita solicitar token en cada request)
-let tokenCache = {
-  token: null,
-  expiracion: null
-};
-
-// 🔄 Invalidar caché de token
-function invalidarTokenCache() {
-  console.log("🔄 Invalidando caché de token...");
-  tokenCache.token = null;
-  tokenCache.expiracion = null;
-}
+// 🔐 Token Manager (maneja caché y race conditions)
+const tokenManager = new TokenManager(CONFIG);
 
 // ✅ Validar configuración al inicio
 function validarConfiguracion() {
@@ -41,7 +33,7 @@ function validarConfiguracion() {
 }
 
 // 🔄 Función para reintentar con backoff exponencial
-async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, invalidateTokenOn401 = false) {
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
@@ -50,10 +42,10 @@ async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, invalidate
       const is401Error = error.response?.status === 401;
       const isRateLimitError = error.response?.status === 429 || error.code === 'ECONNABORTED';
       
-      // 🔑 Si es error 401 y tenemos la opción activada, invalidar caché
-      if (is401Error && invalidateTokenOn401) {
-        invalidarTokenCache();
-        console.log("🔄 Token inválido detectado, solicitando uno nuevo...");
+      // 🔑 Si es error 401, invalidar token
+      if (is401Error) {
+        tokenManager.invalidar();
+        console.log("🔄 Token inválido detectado (401)");
       }
       
       if (isLastRetry || (!isRateLimitError && !is401Error && error.response?.status !== 500)) {
@@ -67,92 +59,9 @@ async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, invalidate
   }
 }
 
-// 🔑 Obtener token de Autentic con CACHÉ
+// 🔑 Obtener token de Autentic (wrapper para TokenManager)
 async function obtenerToken() {
-  try {
-    // ✅ Verificar si hay token en caché válido
-    const ahora = Date.now();
-    if (tokenCache.token && tokenCache.expiracion && ahora < tokenCache.expiracion) {
-      console.log("🔑 Usando token en caché");
-      return tokenCache.token;
-    }
-
-    validarConfiguracion();
-    
-    const tokenUrl = "https://authorizer.autenticsign.com/v2/authorizer/getToken";
-    const payload = {
-      audience: CONFIG.audience,
-      grant_type: "client_credentials",
-      client_id: CONFIG.clientId,
-      client_secret: CONFIG.clientSecret
-    };
-
-    console.log("📤 Solicitando nuevo token de Autentic...");
-    
-    const response = await retryWithBackoff(async () => {
-      return await axios.post(tokenUrl, payload, {
-        timeout: 15000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-    });
-
-    if (!response.data?.access_token) {
-      throw new Error("Token no recibido en la respuesta de Autentic");
-    }
-
-    // 💾 Guardar en caché (20 minutos por seguridad)
-    tokenCache.token = response.data.access_token;
-    tokenCache.expiracion = ahora + (20 * 60 * 1000); // 20 minutos
-
-    console.log("🔑 Token obtenido y cacheado exitosamente (válido por 20 min)");
-    return tokenCache.token;
-
-  } catch (error) {
-    console.error("❌ Error obteniendo token:", error.response?.data || error.message);
-    throw new Error(`Fallo al obtener token de Autentic: ${error.message}`);
-  }
-}
-
-// 📊 Consultar estado del proceso con REINTENTOS
-export async function consultarProcesoPorMassiveId(massiveProcessingId, token = null) {
-  try {
-    if (!CONFIG.baseUrl) {
-      throw new Error("AUTENTIC_API_BASE no configurado en .env");
-    }
-
-    console.log(`🔍 Consultando proceso: ${massiveProcessingId}`);
-
-    const resultado = await retryWithBackoff(async () => {
-      const tokenToUse = token || await obtenerToken();
-      const url = `${CONFIG.baseUrl}/v3/signing-process/${massiveProcessingId}`;
-      
-      return await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${tokenToUse}`
-        },
-        timeout: 20000
-      });
-    }, 3, 2000, true); // ✅ true = invalidar token en 401
-
-    console.log("✅ Estado del proceso consultado exitosamente");
-    return resultado.data;
-
-  } catch (error) {
-    console.error("❌ Error consultando proceso:", error.response?.data || error.message);
-    
-    // Diferenciar tipos de error para mejor debugging
-    if (error.response?.status === 404) {
-      throw new Error(`Proceso no encontrado: ${massiveProcessingId}`);
-    } else if (error.response?.status === 429) {
-      throw new Error("Rate limit excedido - demasiadas solicitudes");
-    } else if (error.code === 'ECONNABORTED') {
-      throw new Error("Timeout al consultar proceso - intente nuevamente");
-    }
-    
-    throw new Error(`Fallo al consultar estado del proceso: ${error.message}`);
-  }
+  return await tokenManager.obtenerToken();
 }
 
 // 📤 Enviar proceso de firma a Autentic
@@ -238,6 +147,47 @@ function obtenerFechaExpiracion(dias) {
   return fecha.toISOString().split("T")[0];
 }
 
+// 📊 Consultar estado del proceso con REINTENTOS
+export async function consultarProcesoPorMassiveId(massiveProcessingId, token = null) {
+  try {
+    if (!CONFIG.baseUrl) {
+      throw new Error("AUTENTIC_API_BASE no configurado en .env");
+    }
+
+    console.log(`🔍 Consultando proceso: ${massiveProcessingId}`);
+
+    const resultado = await retryWithBackoff(async () => {
+      // ✅ IMPORTANTE: Siempre obtener token fresco (usa caché si es válido)
+      const tokenToUse = await obtenerToken();
+      const url = `${CONFIG.baseUrl}/v3/signing-process/${massiveProcessingId}`;
+      
+      return await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${tokenToUse}`
+        },
+        timeout: 20000
+      });
+    }, 3, 2000);
+
+    console.log("✅ Estado del proceso consultado exitosamente");
+    return resultado.data;
+
+  } catch (error) {
+    console.error("❌ Error consultando proceso:", error.response?.data || error.message);
+    
+    // Diferenciar tipos de error para mejor debugging
+    if (error.response?.status === 404) {
+      throw new Error(`Proceso no encontrado: ${massiveProcessingId}`);
+    } else if (error.response?.status === 429) {
+      throw new Error("Rate limit excedido - demasiadas solicitudes");
+    } else if (error.code === 'ECONNABORTED') {
+      throw new Error("Timeout al consultar proceso - intente nuevamente");
+    }
+    
+    throw new Error(`Fallo al consultar estado del proceso: ${error.message}`);
+  }
+}
+
 // 📥 Descargar archivos firmados
 export async function descargarArchivosFirmados(processId, token = null) {
   try {
@@ -295,4 +245,4 @@ export async function descargarArchivosFirmados(processId, token = null) {
   }
 }
 
-export { obtenerToken, invalidarTokenCache };
+export { obtenerToken };

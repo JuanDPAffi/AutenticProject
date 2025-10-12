@@ -1,13 +1,15 @@
-// src/middlewares/rateLimiter.js
+// src/middlewares/simpleRateLimiter.js
 
-class RateLimiter {
+class SimpleRateLimiter {
   constructor() {
     this.queue = [];
     this.processing = false;
-    this.requestsPerSecond = 5; // Máximo 5 requests por segundo
-    this.delayBetweenRequests = 1000 / this.requestsPerSecond; // 200ms entre requests
+    this.delayBetweenRequests = 200; // 200ms entre requests = 5 req/segundo
   }
 
+  /**
+   * Procesa requests UNO POR UNO
+   */
   async add(fn) {
     return new Promise((resolve, reject) => {
       this.queue.push({ fn, resolve, reject });
@@ -15,22 +17,31 @@ class RateLimiter {
     });
   }
 
+  /**
+   * Procesa la cola secuencialmente
+   */
   async processQueue() {
-    if (this.processing || this.queue.length === 0) return;
+    // Si ya está procesando, no hacer nada
+    if (this.processing) return;
+    
+    // Si no hay items, terminar
+    if (this.queue.length === 0) return;
 
     this.processing = true;
 
+    // Procesar items UNO POR UNO
     while (this.queue.length > 0) {
       const { fn, resolve, reject } = this.queue.shift();
       
       try {
+        console.log(`📦 Procesando... (${this.queue.length} en cola)`);
         const result = await fn();
         resolve(result);
       } catch (error) {
         reject(error);
       }
 
-      // ⏱️ Esperar antes de procesar el siguiente
+      // ⏱️ Esperar antes del siguiente (evita saturar Autentic)
       if (this.queue.length > 0) {
         await this.delay(this.delayBetweenRequests);
       }
@@ -42,9 +53,16 @@ class RateLimiter {
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  getStats() {
+    return {
+      queueSize: this.queue.length,
+      processing: this.processing
+    };
+  }
 }
 
-// Instancia global del rate limiter
-const rateLimiter = new RateLimiter();
+// Instancia global
+const rateLimiter = new SimpleRateLimiter();
 
 export default rateLimiter;

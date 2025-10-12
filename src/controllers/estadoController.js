@@ -1,6 +1,6 @@
-// controllers/estadoController.js - OPTIMIZADO CON RATE LIMITER
+// controllers/estadoController.js
 import { consultarProcesoPorMassiveId, obtenerToken } from "../services/autenticService.js";
-import rateLimiter from "../middlewares/rateLimiter.js";
+import rateLimiter from "../middlewares/simpleRateLimiter.js";
 
 export async function consultarYActualizarEstadoProceso(req, res) {
   const startTime = Date.now();
@@ -17,15 +17,14 @@ export async function consultarYActualizarEstadoProceso(req, res) {
       });
     }
 
-    console.log(`🔍 [${new Date().toISOString()}] Consultando estado del proceso: ${massiveProcessingId}`);
+    // 📊 Log de estadísticas de cola
+    const stats = rateLimiter.getStats();
+    console.log(`🔍 [${new Date().toISOString()}] Consultando: ${massiveProcessingId}`);
+    console.log(`   📊 Cola: ${stats.queueSize} requests esperando`);
 
-    // ✅ Usar rate limiter para evitar sobrecarga
+    // ✅ Usar rate limiter para procesar UNO POR UNO
     const resultado = await rateLimiter.add(async () => {
-      // Obtener token una sola vez (se cachea automáticamente)
-      const token = await obtenerToken();
-      
-      // Consultar proceso con reintentos automáticos
-      return await consultarProcesoPorMassiveId(massiveProcessingId, token);
+      return await consultarProcesoPorMassiveId(massiveProcessingId);
     });
 
     const processData = resultado?.body?.processes?.[0];
