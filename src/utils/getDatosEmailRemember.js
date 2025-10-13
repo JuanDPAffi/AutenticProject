@@ -16,6 +16,10 @@ export default function getDatosEmailRemember(bodyText, asuntoRecibido) {
       asunto = "Proceso de firma completado - Autentic Sign";
     } else if (asuntoLimpio === "Notificación de firma en Autentic Sign") {
       asunto = "Notificación de firma en Autentic Sign";
+    } else if (asuntoLimpio === "Carga masiva de procesos completada - AutenTIC Sign") {
+      asunto = "Carga masiva de procesos completada - AutenTIC Sign";
+    } else if (asuntoLimpio === "Carga masiva de procesos completada - AutenTIC Sign - QA") {
+      asunto = "Carga masiva de procesos completada - AutenTIC Sign - QA";
     } else {
       // Si no coincide, lanzamos el error
       throw new Error("❌ Asunto no reconocido");
@@ -43,6 +47,7 @@ export default function getDatosEmailRemember(bodyText, asuntoRecibido) {
       if (!firmante) throw new Error("❌ No se encontró firmante en el correo");
     }
 
+    console.log("✅ Datos extraídos correctamente:", { processId, asunto, firmante });
     return { processId, asunto, fecha, firmante, modificado };
 
   } catch (error) {
