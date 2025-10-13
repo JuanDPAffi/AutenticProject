@@ -75,7 +75,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     }
 
     // Enviar correo al director si firmó Lilian o César y aún no se ha notificado
-    const ccValidos = ["1112956229", "94492994"]; // Lilian, Cesar
+    const ccValidos = ["67012593", "94492994"]; // Lilian, Cesar
 
     if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
       // Normalizar la zona
