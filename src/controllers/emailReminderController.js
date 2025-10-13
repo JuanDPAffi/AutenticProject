@@ -12,6 +12,9 @@ import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js
 // 🕐 Función helper para delay
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// ⚙️ CONFIGURACIÓN: Enviar correo a directores cuando es convenio
+const ENVIAR_CORREO_DIRECTOR_CONVENIOS = false; // ✅ Cambia a true para activar
+
 export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
   try {
     console.log(`\n========================================`);
@@ -19,13 +22,17 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     console.log(JSON.stringify(req.body, null, 2));
     console.log(`========================================\n`);
 
-    const { zona, processId, numContrato, nombreCliente, tipo_contrato, endpointConvenio } = req.body;
+    const { zona, processId, numContrato, nombreCliente, tipo_contrato, endpointConvenio, numConvenio } = req.body;
     
     // 🔍 Determinar si es convenio de firma digital
     const esConvenio = endpointConvenio?.trim().toLowerCase() === "si";
     console.log(`📋 Tipo de documento: ${esConvenio ? "Convenio de firma digital" : "Contrato de fianza"}`);
 
-    if (!zona || !processId || !numContrato || !nombreCliente || !tipo_contrato) {
+    // 📝 Determinar qué número usar según el tipo de documento
+    const numeroDocumento = esConvenio && numConvenio ? numConvenio : numContrato;
+    console.log(`📄 Número de documento a usar: ${numeroDocumento} ${esConvenio ? "(convenio)" : "(contrato)"}`);
+
+    if (!zona || !processId || !numeroDocumento || !nombreCliente || !tipo_contrato) {
       return res.status(400).json({ error: "Faltan datos en la solicitud" });
     }
 
@@ -87,10 +94,10 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       await enviarCorreoRecordatorio(
         firmantePendiente,
         processId,
-        numContrato,
+        numeroDocumento,  // ✅ Usar numeroDocumento en vez de numContrato
         nombreCliente,
         asunto,
-        esConvenio  // ✅ Pasar el flag de convenio
+        esConvenio
       );
       console.log(`📧 Recordatorio enviado a ${firmantePendiente}`);
     }
@@ -116,41 +123,47 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
 
     // 📌 2️⃣ Enviar correo al director si firmó Lilian o César y aún no se ha notificado
     if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
-      console.log(`🎯 ✅ ENTRANDO al bloque del director...`);
       
-      // Normalizar la zona
-      let zonaNormalizada = ["Antioquia", "Centro"].includes(zona) ? zona : "Regiones";
-      console.log(`📍 Zona normalizada: "${zona}" → "${zonaNormalizada}"`);
+      // 🚫 Validar si se debe enviar correo cuando es convenio
+      if (esConvenio && !ENVIAR_CORREO_DIRECTOR_CONVENIOS) {
+        console.log(`⚠️ Convenio detectado - NO se envía correo al director (configuración: ENVIAR_CORREO_DIRECTOR_CONVENIOS = false)`);
+      } else {
+        console.log(`🎯 ✅ ENTRANDO al bloque del director...`);
+        
+        // Normalizar la zona
+        let zonaNormalizada = ["Antioquia", "Centro"].includes(zona) ? zona : "Regiones";
+        console.log(`📍 Zona normalizada: "${zona}" → "${zonaNormalizada}"`);
 
-      // Buscar director por zona normalizada
-      const director = await Director.findOne({ zona: zonaNormalizada });
-      if (!director) {
-        console.error(`❌ No se encontró director para la zona: ${zonaNormalizada}`);
-        return res.status(404).json({ error: `No se encontró director para la zona: ${zonaNormalizada}` });
+        // Buscar director por zona normalizada
+        const director = await Director.findOne({ zona: zonaNormalizada });
+        if (!director) {
+          console.error(`❌ No se encontró director para la zona: ${zonaNormalizada}`);
+          return res.status(404).json({ error: `No se encontró director para la zona: ${zonaNormalizada}` });
+        }
+
+        console.log(`👤 Director encontrado: ${director.name} ${director.last_name} (${director.email})`);
+
+        const fechaEnvio = new Date().toLocaleDateString("es-CO");
+
+        const html = emailDirectorTemplate(
+          `${director.name} ${director.last_name}`,
+          numeroDocumento,  // ✅ Usar numeroDocumento en vez de numContrato
+          nombreCliente,
+          fechaEnvio,
+          firmante,
+          esConvenio
+        );
+
+        console.log(`📤 Enviando correo al director...`);
+        await enviarCorreoDirector(director.email, html);
+
+        // ✅ Marcar como enviado y guardar zona ya normalizada
+        proceso.correoDirector = true;
+        proceso.zona = zonaNormalizada;
+        await proceso.save();
+
+        console.log("✅ Correo enviado al director y BD actualizada");
       }
-
-      console.log(`👤 Director encontrado: ${director.name} ${director.last_name} (${director.email})`);
-
-      const fechaEnvio = new Date().toLocaleDateString("es-CO");
-
-      const html = emailDirectorTemplate(
-        `${director.name} ${director.last_name}`,
-        numContrato,
-        nombreCliente,
-        fechaEnvio,
-        firmante,
-        esConvenio  // ✅ Pasar el flag de convenio
-      );
-
-      console.log(`📤 Enviando correo al director...`);
-      await enviarCorreoDirector(director.email, html);
-
-      // ✅ Marcar como enviado y guardar zona ya normalizada
-      proceso.correoDirector = true;
-      proceso.zona = zonaNormalizada;
-      await proceso.save();
-
-      console.log("✅ Correo enviado al director y BD actualizada");
     } else {
       console.log(`⚠️ NO se envió correo al director (condición no cumplida)`);
     }

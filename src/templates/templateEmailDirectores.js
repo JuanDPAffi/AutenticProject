@@ -1,4 +1,4 @@
-const emailDirectorTemplate = (nombre_destinatario, num_contrato, nombre_cliente, fecha_envio_correo, nombre_firma, esConvenio = false) => {
+const emailDirectorTemplate = (nombre_destinatario, numeroDocumento, nombre_cliente, fecha_envio_correo, nombre_firma, esConvenio = false) => {
   const tipoDocumento = esConvenio ? "convenio de firma digital" : "contrato de fianza";
   const labelNumero = esConvenio ? "Número de convenio" : "Número de contrato";
   
@@ -16,7 +16,7 @@ const emailDirectorTemplate = (nombre_destinatario, num_contrato, nombre_cliente
                 </p>
 
                 <div style="background-color:#f9fafb; border-left:4px solid #2b2d77; padding:15px 20px; margin-top:20px; border-radius:6px; font-size:15px;">
-                  <p><strong>📄 ${labelNumero}:</strong> ${num_contrato}</p>
+                  <p><strong>📄 ${labelNumero}:</strong> ${numeroDocumento}</p>
                   <p><strong>🏢 Nombre cliente:</strong> ${nombre_cliente}</p>
                   <p><strong>📅 Fecha firma del ${tipoDocumento}:</strong> ${fecha_envio_correo}</p>
                   <p><strong>🔗 Firmado por:</strong> ${nombre_firma}</p>
