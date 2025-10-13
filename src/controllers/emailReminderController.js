@@ -13,7 +13,7 @@ import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ⚙️ CONFIGURACIÓN: Enviar correo a directores cuando es convenio
-const ENVIAR_CORREO_DIRECTOR_CONVENIOS = false; // ✅ Cambia a true para activar
+const ENVIAR_CORREO_DIRECTOR_CONVENIOS = true; // ✅ Cambia a true para activar
 
 export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
   try {
