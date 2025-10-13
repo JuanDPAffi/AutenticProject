@@ -89,24 +89,31 @@ async function crearArchivoService(num_convenio, buffer) {
  * Procesa y sube el convenio de firma digital a HubSpot
  * @param {number} id_convenio - ID del convenio en HubSpot
  * @param {string} num_convenio - Número del convenio (ej: "FD5247")
- * @param {Array} fileBuffer - Array con el archivo descargado de Autentic (siempre 1 archivo)
+ * @param {Array} fileBuffer - Array con archivos descargados de Autentic
  * @returns {Object} - Resultado del proceso
  */
 export async function procesarArchivoConvenioService(id_convenio, nombre_inm, num_convenio, fileBuffer) {
   try {
     console.log(`🚀 Procesando convenio de firma digital: ${num_convenio}`);
+    console.log(`📦 Total de archivos recibidos: ${fileBuffer?.length || 0}`);
 
-    // ✅ Siempre es 1 solo archivo (el convenio)
-    const archivo = fileBuffer[0];
-    
-    if (!archivo) {
-      throw new Error("No se recibió ningún archivo para procesar");
+    // 🔍 Filtrar SOLO el archivo del convenio de firma digital
+    const convenioArchivo = fileBuffer.find(archivo => {
+      const nombreNormalizado = archivo.name.toLowerCase();
+      return nombreNormalizado.includes('convenio_firma_digital') || 
+             nombreNormalizado.includes('convenio firma digital');
+    });
+
+    if (!convenioArchivo) {
+      console.error("❌ Archivos disponibles:");
+      fileBuffer.forEach((f, idx) => console.error(`   ${idx + 1}. ${f.name}`));
+      throw new Error("No se encontró el archivo del convenio de firma digital en los archivos descargados");
     }
 
-    console.log(`📦 Procesando archivo: ${archivo.name}`);
+    console.log(`✅ Convenio encontrado: ${convenioArchivo.name}`);
 
     // 1️⃣ Subir archivo a HubSpot
-    const archivoResponse = await crearArchivoService(num_convenio, archivo.buffer);
+    const archivoResponse = await crearArchivoService(num_convenio, convenioArchivo.buffer);
     if (!archivoResponse.success) {
       throw new Error(`Error al subir archivo: ${archivoResponse.error}`);
     }
