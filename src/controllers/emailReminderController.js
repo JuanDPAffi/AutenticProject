@@ -11,6 +11,12 @@ import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js
 
 export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
   try {
+    // ✅ LOG 1: Datos recibidos
+    console.log(`\n========================================`);
+    console.log(`📥 INICIO - Datos recibidos desde HubSpot:`);
+    console.log(JSON.stringify(req.body, null, 2));
+    console.log(`========================================\n`);
+
     const { zona, processId, numContrato, nombreCliente, tipo_contrato } = req.body;
 
     if (!zona || !processId || !numContrato || !nombreCliente || !tipo_contrato) {
@@ -21,6 +27,16 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     if (!proceso) {
       return res.status(404).json({ error: "No se encontró el proceso con ese ID" });
     }
+
+    // ✅ LOG 2: Estado actual del proceso
+    console.log(`📄 Estado actual del proceso en BD:`, {
+      processId: proceso.processId,
+      firmante: proceso.firmante,
+      asunto: proceso.asunto,
+      correoDirector: proceso.correoDirector,
+      zona: proceso.zona,
+      convenio: proceso.convenio
+    });
 
     const { firmante, asunto, correoDirector } = proceso;
     
@@ -50,7 +66,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         cedulaFirmante = gerente.cc?.toString();
         console.log(`🔍 Gerente encontrado: ${gerente.name} ${gerente.last_name} - CC: ${cedulaFirmante}`);
       } else {
-        console.log(`Firmante "${firmante}" no es un gerente registrado (probablemente cliente)`);
+        console.log(`⚠️ Firmante "${firmante}" no es un gerente registrado (probablemente cliente)`);
       }
     }
 
@@ -58,7 +74,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     const firmantePendiente = determinarFirmantePendiente(
       asunto, 
       cedulaFirmante, 
-      proceso.convenio // Ahora usamos el campo booleano
+      proceso.convenio
     );
 
     console.log(`🔍 Debug - Firmante: ${firmante}, Cédula: ${cedulaFirmante}, Convenio: ${proceso.convenio}, Pendiente: ${firmantePendiente}`);
@@ -74,18 +90,38 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       console.log(`📧 Recordatorio enviado a ${firmantePendiente}`);
     }
 
-    // Enviar correo al director si firmó Lilian o César y aún no se ha notificado
-    const ccValidos = ["67012593", "94492994"]; // Lilian, Cesar
+    // ✅ LOG 3: Verificación antes del bloque del director
+    console.log(`\n========================================`);
+    console.log(`🔍 VERIFICANDO ENVÍO A DIRECTOR:`);
+    console.log(`   📍 zona recibida: "${zona}"`);
+    console.log(`   📍 firmante: "${firmante}"`);
+    console.log(`   📍 cedulaFirmante: "${cedulaFirmante}"`);
+    console.log(`   📍 correoDirector (BD): ${correoDirector}`);
+    console.log(`   📍 tipo correoDirector: ${typeof correoDirector}`);
+    
+    const ccValidos = ["67012593", "94492994"];
+    console.log(`   📍 ccValidos: [${ccValidos.join(", ")}]`);
+    console.log(`   📍 ccValidos.includes("${cedulaFirmante}"): ${ccValidos.includes(cedulaFirmante)}`);
+    console.log(`   📍 correoDirector === false: ${correoDirector === false}`);
+    console.log(`   📍 Condición completa: ${ccValidos.includes(cedulaFirmante) && correoDirector === false}`);
+    console.log(`========================================\n`);
 
+    // Enviar correo al director si firmó Lilian o César y aún no se ha notificado
     if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
+      console.log(`🎯 ✅ ENTRANDO al bloque del director...`);
+      
       // Normalizar la zona
       let zonaNormalizada = ["Antioquia", "Centro"].includes(zona) ? zona : "Regiones";
+      console.log(`📍 Zona normalizada: "${zona}" → "${zonaNormalizada}"`);
 
       // Buscar director por zona normalizada
       const director = await Director.findOne({ zona: zonaNormalizada });
       if (!director) {
+        console.error(`❌ No se encontró director para la zona: ${zonaNormalizada}`);
         return res.status(404).json({ error: `No se encontró director para la zona: ${zonaNormalizada}` });
       }
+
+      console.log(`👤 Director encontrado: ${director.name} ${director.last_name} (${director.email})`);
 
       const fechaEnvio = new Date().toLocaleDateString("es-CO");
 
@@ -97,6 +133,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         firmante
       );
 
+      console.log(`📤 Enviando correo al director...`);
       await enviarCorreoDirector(director.email, html);
 
       // ✅ Marcar como enviado y guardar zona ya normalizada
@@ -104,13 +141,18 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       proceso.zona = zonaNormalizada;
       await proceso.save();
 
-      console.log("✅ Correo enviado al director");
+      console.log("✅ Correo enviado al director y BD actualizada");
+    } else {
+      console.log(`⚠️ NO se envió correo al director (condición no cumplida)`);
     }
 
+    console.log(`\n✅ Flujo completado exitosamente\n`);
     return res.status(200).json({ message: "✅ Flujo de recordatorio procesado correctamente" });
 
   } catch (error) {
-    console.error("❌ Error en flujo de recordatorio:", error.message);
+    console.error("\n❌ ERROR EN FLUJO DE RECORDATORIO:");
+    console.error("   Mensaje:", error.message);
+    console.error("   Stack:", error.stack);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 };
