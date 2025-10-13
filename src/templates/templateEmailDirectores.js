@@ -1,4 +1,8 @@
-const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_envio_correo,nombre_firma) => `
+const emailDirectorTemplate = (nombre_destinatario, num_contrato, nombre_cliente, fecha_envio_correo, nombre_firma, esConvenio = false) => {
+  const tipoDocumento = esConvenio ? "convenio de firma digital" : "contrato de fianza";
+  const labelNumero = esConvenio ? "Número de convenio" : "Número de contrato";
+  
+  return `
   <body>
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f4f7; padding:40px 20px;">
       <tr>
@@ -8,13 +12,13 @@ const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_e
               <td>
                 <h2 style="color:#1a202c; margin-bottom:20px;">¡Hola <strong>${nombre_destinatario}</strong>!</h2>
                 <p style="font-size:16px; line-height:1.6;">
-                  Te informamos que el contrato de fianza ha sido firmado por la gerencia comercial, puedes continuar con tu gestion comercial.
+                  Te informamos que el ${tipoDocumento} ha sido firmado por la gerencia comercial, puedes continuar con tu gestión comercial.
                 </p>
 
                 <div style="background-color:#f9fafb; border-left:4px solid #2b2d77; padding:15px 20px; margin-top:20px; border-radius:6px; font-size:15px;">
-                  <p><strong>📄 Número de contrato:</strong> ${num_contrato}</p>
-                  <p><strong>🏣 Nombre cliente:</strong> ${nombre_cliente}</p>
-                  <p><strong>📅 Fecha firma del contrato:</strong> ${fecha_envio_correo}</p>
+                  <p><strong>📄 ${labelNumero}:</strong> ${num_contrato}</p>
+                  <p><strong>🏢 Nombre cliente:</strong> ${nombre_cliente}</p>
+                  <p><strong>📅 Fecha firma del ${tipoDocumento}:</strong> ${fecha_envio_correo}</p>
                   <p><strong>🔗 Firmado por:</strong> ${nombre_firma}</p>
                 </div>
 
@@ -43,5 +47,6 @@ const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_e
     </table>
   </body>
 `;
+};
 
-export default emailRemember
+export default emailDirectorTemplate;

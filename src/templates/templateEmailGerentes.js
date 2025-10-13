@@ -1,6 +1,8 @@
-// src\templates\templateEmailGerentes.js
-
-const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_envio_correo, process_id,asunto) => `
+const emailGerenteTemplate = (nombre_destinatario, num_contrato, nombre_cliente, fecha_envio_correo, process_id, asunto, esConvenio = false) => {
+  const tipoDocumento = esConvenio ? "convenio de firma digital" : "contrato";
+  const labelNumero = esConvenio ? "Número de convenio" : "Número de contrato";
+  
+  return `
   <body>
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f4f7; padding:40px 20px;">
       <tr>
@@ -10,12 +12,12 @@ const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_e
               <td>
                 <h2 style="color:#1a202c; margin-bottom:20px;">¡Hola <strong>${nombre_destinatario}</strong>!</h2>
                 <p style="font-size:16px; line-height:1.6;">
-                  Este es un recordatorio de que aún está pendiente la firma del contrato: 
+                  Este es un recordatorio de que aún está pendiente la firma del ${tipoDocumento}: 
                 </p>
 
                 <div style="background-color:#f9fafb; border-left:4px solid #2b2d77; padding:15px 20px; margin-top:20px; border-radius:6px; font-size:15px;">
-                  <p><strong>📄 Número de contrato:</strong> ${num_contrato}</p>
-                  <p><strong>🏣 Nombre cliente:</strong> ${nombre_cliente}</p>
+                  <p><strong>📄 ${labelNumero}:</strong> ${num_contrato}</p>
+                  <p><strong>🏢 Nombre cliente:</strong> ${nombre_cliente}</p>
                   <p><strong>🪧 Asunto del correo:</strong> ${asunto}</p>
                   <p><strong>📅 Fecha de envío:</strong> ${fecha_envio_correo}</p>
                   <p><strong>🪪 Process Id:</strong> ${process_id}</p>
@@ -49,5 +51,6 @@ const emailRemember = (nombre_destinatario,num_contrato, nombre_cliente, fecha_e
     </table>
   </body>
 `;
+};
 
-export default emailRemember
+export default emailGerenteTemplate;

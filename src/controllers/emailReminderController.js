@@ -19,7 +19,11 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     console.log(JSON.stringify(req.body, null, 2));
     console.log(`========================================\n`);
 
-    const { zona, processId, numContrato, nombreCliente, tipo_contrato } = req.body;
+    const { zona, processId, numContrato, nombreCliente, tipo_contrato, endpointConvenio } = req.body;
+    
+    // 🔍 Determinar si es convenio de firma digital
+    const esConvenio = endpointConvenio?.trim().toLowerCase() === "si";
+    console.log(`📋 Tipo de documento: ${esConvenio ? "Convenio de firma digital" : "Contrato de fianza"}`);
 
     if (!zona || !processId || !numContrato || !nombreCliente || !tipo_contrato) {
       return res.status(400).json({ error: "Faltan datos en la solicitud" });
@@ -85,7 +89,8 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         processId,
         numContrato,
         nombreCliente,
-        asunto
+        asunto,
+        esConvenio  // ✅ Pasar el flag de convenio
       );
       console.log(`📧 Recordatorio enviado a ${firmantePendiente}`);
     }
@@ -100,6 +105,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     console.log(`   📍 cedulaFirmante: "${cedulaFirmante}"`);
     console.log(`   📍 correoDirector (BD): ${correoDirector}`);
     console.log(`   📍 tipo correoDirector: ${typeof correoDirector}`);
+    console.log(`   📍 esConvenio: ${esConvenio}`);
     
     const ccValidos = ["67012593", "94492994"];
     console.log(`   📍 ccValidos: [${ccValidos.join(", ")}]`);
@@ -132,7 +138,8 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         numContrato,
         nombreCliente,
         fechaEnvio,
-        firmante
+        firmante,
+        esConvenio  // ✅ Pasar el flag de convenio
       );
 
       console.log(`📤 Enviando correo al director...`);

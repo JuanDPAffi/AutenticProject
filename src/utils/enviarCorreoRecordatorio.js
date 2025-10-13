@@ -2,10 +2,10 @@
 
 import axios from "axios";
 import emailRemember from "../templates/templateEmailGerentes.js";
-import { Gerente } from "../models/gerenteModel.js"; // asegúrate que tu modelo esté correctamente exportado
+import { Gerente } from "../models/gerenteModel.js";
 import dotenv from "dotenv";
 
-dotenv.config(); // Carga las variables de entorno desde .env
+dotenv.config();
 
 // 🔐 Obtener token Microsoft Graph
 async function getToken() {
@@ -65,7 +65,14 @@ async function enviarCorreo(destinatarioEmail, htmlContent) {
 }
 
 // 📩 Función principal exportada
-export default async function enviarCorreoRecordatorio(tipoGerente, processId, numContrato, nombreCliente, asunto) {
+export default async function enviarCorreoRecordatorio(
+  tipoGerente, 
+  processId, 
+  numContrato, 
+  nombreCliente, 
+  asunto,
+  esConvenio = false  // ✅ Nuevo parámetro
+) {
   console.log("🔍 Buscando gerente por tipo:", tipoGerente);
 
   const gerente = await Gerente.findOne({ type: tipoGerente });
@@ -82,7 +89,8 @@ export default async function enviarCorreoRecordatorio(tipoGerente, processId, n
     nombreCliente,
     fechaEnvio,
     processId,
-    asunto
+    asunto,
+    esConvenio  // ✅ Log del nuevo parámetro
   });
 
   const htmlBody = emailRemember(
@@ -91,7 +99,8 @@ export default async function enviarCorreoRecordatorio(tipoGerente, processId, n
     nombreCliente,
     fechaEnvio,
     processId,
-    asunto
+    asunto,
+    esConvenio  // ✅ Pasar el parámetro al template
   );
 
   await enviarCorreo(gerente.email, htmlBody);
