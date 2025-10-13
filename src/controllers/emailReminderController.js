@@ -9,9 +9,11 @@ import emailDirectorTemplate from "../templates/templateEmailDirectores.js";
 import enviarCorreoRecordatorio from "../utils/enviarCorreoRecordatorio.js";
 import determinarFirmantePendiente from "../utils/determinarFirmantePendiente.js";
 
+// 🕐 Función helper para delay
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
   try {
-    // ✅ LOG 1: Datos recibidos
     console.log(`\n========================================`);
     console.log(`📥 INICIO - Datos recibidos desde HubSpot:`);
     console.log(JSON.stringify(req.body, null, 2));
@@ -28,7 +30,6 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       return res.status(404).json({ error: "No se encontró el proceso con ese ID" });
     }
 
-    // ✅ LOG 2: Estado actual del proceso
     console.log(`📄 Estado actual del proceso en BD:`, {
       processId: proceso.processId,
       firmante: proceso.firmante,
@@ -54,7 +55,6 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     let cedulaFirmante = null;
     
     if (firmante) {
-      // Buscar gerente por nombre completo
       const gerente = await Gerente.findOne({
         $or: [
           { $expr: { $eq: [{ $concat: ["$name", " ", "$last_name"] }, firmante.trim()] } },
@@ -90,7 +90,9 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
       console.log(`📧 Recordatorio enviado a ${firmantePendiente}`);
     }
 
-    // ✅ LOG 3: Verificación antes del bloque del director
+    // ⏱️ Delay de 500ms para asegurar que las operaciones asíncronas se completen
+    await sleep(500);
+
     console.log(`\n========================================`);
     console.log(`🔍 VERIFICANDO ENVÍO A DIRECTOR:`);
     console.log(`   📍 zona recibida: "${zona}"`);
@@ -106,7 +108,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
     console.log(`   📍 Condición completa: ${ccValidos.includes(cedulaFirmante) && correoDirector === false}`);
     console.log(`========================================\n`);
 
-    // Enviar correo al director si firmó Lilian o César y aún no se ha notificado
+    // 📌 2️⃣ Enviar correo al director si firmó Lilian o César y aún no se ha notificado
     if (ccValidos.includes(cedulaFirmante) && correoDirector === false) {
       console.log(`🎯 ✅ ENTRANDO al bloque del director...`);
       
