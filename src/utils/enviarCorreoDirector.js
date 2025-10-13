@@ -1,4 +1,4 @@
-// src\utils\enviarCorreoDirector.js
+// src/utils/enviarCorreoDirector.js
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
@@ -25,13 +25,19 @@ async function getToken() {
   }
 }
 
-export default async function enviarCorreo(destinatarioEmail, htmlContent) {
+export default async function enviarCorreo(destinatarioEmail, htmlContent, esConvenio = false, numeroDocumento = "") {
   const token = await getToken();
-  const sender = "comercial@affi.net"; // puedes cambiarlo si lo deseas
+  const sender = "comercial@affi.net";
+
+  // 📧 Subject dinámico según el tipo de documento
+  const tipoDocumento = esConvenio ? "convenio de firma digital" : "contrato";
+  const subject = `Firma de ${tipoDocumento} completada por gerencia comercial${numeroDocumento ? ` - ${numeroDocumento}` : ""}`;
+
+  console.log(`📧 Subject generado: "${subject}"`);
 
   const mailData = {
     message: {
-      subject: "Firma de contrato completada por gerencia comercial",
+      subject: subject,
       body: { contentType: "HTML", content: htmlContent },
       toRecipients: [{ emailAddress: { address: destinatarioEmail } }]
     },

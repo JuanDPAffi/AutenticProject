@@ -155,7 +155,7 @@ export const gestionarRecordatorioDesdeHubspot = async (req, res) => {
         );
 
         console.log(`📤 Enviando correo al director...`);
-        await enviarCorreoDirector(director.email, html);
+        await enviarCorreoDirector(director.email, html, esConvenio, numeroDocumento);
 
         // ✅ Marcar como enviado y guardar zona ya normalizada
         proceso.correoDirector = true;

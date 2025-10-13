@@ -38,18 +38,24 @@ async function getToken() {
 }
 
 // 📧 Enviar correo con Graph API como comercial@affi.net
-async function enviarCorreo(destinatarioEmail, htmlContent) {
+async function enviarCorreo(destinatarioEmail, htmlContent, esConvenio = false, numeroDocumento = "") {
   const token = await getToken();
   const sender = "comercial@affi.net";
 
   console.log("Sender:", sender);
+
+  // 📧 Subject dinámico según el tipo de documento
+  const tipoDocumento = esConvenio ? "convenio" : "contrato";
+  const subject = `Recordatorio de firma de ${tipoDocumento}${numeroDocumento ? ` - ${numeroDocumento}` : ""}`;
+  
+  console.log(`📧 Subject generado: "${subject}"`);
 
   const urlMailSend = `https://graph.microsoft.com/v1.0/users/${sender}/sendMail`;
   console.log("📬 URL generada:", JSON.stringify(urlMailSend));
 
   const jsonBody = {
     message: {
-      subject: "Recordatorio de Firma",
+      subject: subject,
       body: { contentType: "HTML", content: htmlContent },
       toRecipients: [{ emailAddress: { address: destinatarioEmail } }]
     },
@@ -68,10 +74,10 @@ async function enviarCorreo(destinatarioEmail, htmlContent) {
 export default async function enviarCorreoRecordatorio(
   tipoGerente, 
   processId, 
-  numContrato, 
+  numeroDocumento,  // ✅ Ya viene con el número correcto
   nombreCliente, 
   asunto,
-  esConvenio = false  // ✅ Nuevo parámetro
+  esConvenio = false
 ) {
   console.log("🔍 Buscando gerente por tipo:", tipoGerente);
 
@@ -85,24 +91,24 @@ export default async function enviarCorreoRecordatorio(
   console.log("📦 Datos enviados a la plantilla:");
   console.log({
     destinatario: `${gerente.name} ${gerente.last_name}`,
-    numContrato,
+    numeroDocumento,
     nombreCliente,
     fechaEnvio,
     processId,
     asunto,
-    esConvenio  // ✅ Log del nuevo parámetro
+    esConvenio
   });
 
   const htmlBody = emailRemember(
     `${gerente.name} ${gerente.last_name}`,
-    numContrato,
+    numeroDocumento,
     nombreCliente,
     fechaEnvio,
     processId,
     asunto,
-    esConvenio  // ✅ Pasar el parámetro al template
+    esConvenio
   );
 
-  await enviarCorreo(gerente.email, htmlBody);
+  await enviarCorreo(gerente.email, htmlBody, esConvenio, numeroDocumento);
   console.log(`📧 Recordatorio enviado a ${gerente.name} ${gerente.last_name} (${gerente.email})`);
 }
